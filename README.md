@@ -1,10 +1,10 @@
 # Meia Boca Juniors
 Projeto de Fundamentos de prog 2026/1
 
-Projeto de fundamentos de programaÁ„o 2 2026/2 com o professor Muriel.
-Intuito desse "pequeno" projeto È aprender a como produzir um jogo, utlizando tudo aprendido no curso atÈ o momento, trabalhando com memoria ram, disco, etc...
+Projeto de fundamentos de programa√ß√£o 2 2026/1.
+Intuito desse projeto √© aprender a como produzir um jogo, utlizando tudo aprendido no curso at√© o momento, trabalhando com memoria ram, disco, etc...
 
 *Participantes*
-1. Matheus JosÈ Rosa
-2. Rafael Simıes Boni
+1. Matheus Jos√© Rosa
+2. Rafael Sim√µes Boni
 3. Vinicius Sargentin Souza
