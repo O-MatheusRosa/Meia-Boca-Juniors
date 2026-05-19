@@ -8,3 +8,7 @@ Intuito desse "pequeno" projeto é aprender a como produzir um jogo, utlizando tu
 1. Matheus José Rosa
 2. Rafael Simões Boni
 3. Vinicius Sargentin Souza
+
+
+Sobre o projeto: 
+Primeiro passo vai ser criar a estrutura, tudo visto ate o momento, parecido com oque foi feito na p1 de prog, porem muito mais complexo
