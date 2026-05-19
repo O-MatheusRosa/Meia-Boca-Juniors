@@ -4,7 +4,6 @@
 //###########################################################//
 //Estrutura
 //###########################################################//
-
 typedef struct{
    
    char codigo[15]; //codigo da figurinha
@@ -32,5 +31,8 @@ typedef struct{
     int quantidade_maxima;
 
 }Album;
+
+int Carrega_Csv(Album *album, const char *nome_arquivo); //chama da função referente ao arquivos.c
+
 
 #endif

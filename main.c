@@ -52,8 +52,13 @@ void inicializa_Album(Album *album){
 
        switch (op){
          case 1:
-               printf("\n>> Voce escolheu carregar o CSV!\n");
-               break; 
+        if (Carrega_Csv(&meu_album,"figurinhas2026.csv")){
+            printf("\nArquivo Carregado!\n");
+        }else{
+            printf("\nErro ao carregar o arquivo\n");
+        }//if else de abertura do csv de fig
+        
+         break; 
                
            case 2:
                printf("\n>> No momento o album tem %d figurinhas.\n", meu_album.quantidade_atual);
