@@ -6,6 +6,12 @@
 #include <string.h>
 #include "figurinha.h"
 
+#ifndef _WIN32
+    #include <strings.h>
+    #define stricmp strcasecmp
+#endif
+
+
 //###########################################################//
 //Funcao que vai meio q limpar o nome, pq ele tem os espaços, o \n, tem tudo, entao limpamos ele
 //###########################################################//
