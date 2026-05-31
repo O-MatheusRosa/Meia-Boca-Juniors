@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "figurinha.h"
+#include "utilitarios.h"
+
+#ifndef _WIN32
+    #include <strings.h>
+    #define stricmp strcasecmp
+#endif
+
 
 //###########################################################//
 //Funcao que vai meio q limpar o nome, pq ele tem os espaços, o \n, tem tudo, entao limpamos ele
@@ -49,9 +56,12 @@ void Mostra_Album(Album *album){
     printf("\n=== LISTA DE FIGURINHAS ===\n");
     
     for (int i = 0; i < album->quantidade_atual; i++){
-        printf("\nNome: %-20s || Codigo: %7s || Raridade: %10s\n",album->figurinhas[i].nome_Jogador,album->figurinhas[i].codigo,album->figurinhas[i].raridade);
+        if (album->figurinhas[i].colada == 1){
+            printf("\n[ X ] Nome: %-20s || Codigo: %7s || Raridade: %10s || Repetidas: %d\n",album->figurinhas[i].nome_Jogador,album->figurinhas[i].codigo,album->figurinhas[i].raridade,album->figurinhas[i].quantidade_repetidas);
+        }else{
+            printf("\n[   ] Nome: %-20s || Codigo: %7s || Raridade: %10s || Repetidas: %d\n",album->figurinhas[i].nome_Jogador,album->figurinhas[i].codigo,album->figurinhas[i].raridade,album->figurinhas[i].quantidade_repetidas);
+        }//else caso n tenha colado        
     }//for
-
     printf("===========================\n");
 }//primeira funcao
 
@@ -65,7 +75,6 @@ int Ordena_lista_Bin(const void *a, const void *b){
 
    return stricmp(figurinhaA->nome_Jogador, figurinhaB->nome_Jogador);
 }//segunda função
-
 
 
 //###########################################################//
@@ -83,3 +92,115 @@ int Procura_Jogador(Album *album,char *nome_buscado){
 
     return -1;
 }//enesima fnc
+
+void Abre_Pacotinho(Album *catalogo, Album *meu_album){
+
+   Animacao_Loading();
+
+    for (int i = 0; i < 7; i++){
+        int sorteado = rand() % catalogo->quantidade_atual;
+
+        char *nome_sorteado = catalogo->figurinhas[sorteado].nome_Jogador;
+        int posicao = Procura_Jogador(meu_album,nome_sorteado);
+
+        if (posicao != -1){
+            meu_album->figurinhas[posicao].quantidade_repetidas++;
+            printf(">> Repetida: %s, ja tenho %d dela.....\n",meu_album->figurinhas[posicao].nome_Jogador,meu_album->figurinhas[posicao].quantidade_repetidas);
+        }else{
+
+            if (meu_album->quantidade_atual == meu_album->quantidade_maxima){
+                    meu_album->quantidade_maxima *=2;
+
+                    meu_album->figurinhas = realloc(meu_album->figurinhas, meu_album->quantidade_maxima * sizeof(Dados_Figurinha));
+                
+                    if (meu_album->figurinhas == NULL){
+                    printf(VERMELHO "\nErro ao reallocar as figurinhas\n" RESET);
+                    return;
+                }//nao reallocou
+            }//realloc
+
+                meu_album->figurinhas[meu_album->quantidade_atual] = catalogo->figurinhas[sorteado];
+                
+                meu_album->figurinhas[meu_album->quantidade_atual].colada = 0;
+                meu_album->figurinhas[meu_album->quantidade_atual].quantidade_repetidas = 0;
+                
+                printf(AZUL "\n>> Nova figurinha: " RESET);
+                printf(CIANO " %s\n" RESET, meu_album->figurinhas[meu_album->quantidade_atual].nome_Jogador);
+                Som_Sucesso();
+        
+                        setbuf(stdin,NULL);
+                        int escolha;
+                        printf(VERMELHO ">> Colar no album? (1-sim/0-nao): " RESET);
+                        scanf("%d",&escolha);
+
+                        printf("\n");
+
+                        if (escolha == 1){
+                             meu_album->figurinhas[meu_album->quantidade_atual].colada = 1;
+                        }else{
+                            printf(AMARELO "OK, figurinha indo pro bolo....\n\n" RESET);
+                        }//else
+                meu_album->quantidade_atual++;   
+        }//else 
+    }//for   
+}//funcao
+
+void Alterar_Figurinha(Album *meu_album){
+
+    char nome[51];
+
+    setbuf(stdin,NULL);
+    printf("\n>> Digite o nome do jogador: \n");
+    fgets(nome,50,stdin);
+    nome[strcspn(nome,"\n")] = '\0';
+
+    int posicao = Procura_Jogador(meu_album, nome);
+
+    if (posicao == -1){
+        printf("\nvoce ainda nao achou esse jogador!\n");
+    }else{
+        printf("\n>> ENCONTRADA: %s <<\n",meu_album->figurinhas[posicao].nome_Jogador);
+        printf("\n>> QUANTIDADE: %d <<\n",meu_album->figurinhas[posicao].quantidade_repetidas);
+
+        if (meu_album->figurinhas[posicao].colada == 1) {
+            printf("Status: [ X ] JA COLADA!\n");
+            printf(">> Voce nao pode colar uma figurinha que ja esta colada...\n");
+        } else {
+            printf("Situacao: [   ] NAO COLADA.\n");
+            
+            int escolha;
+            printf("\nDeseja colar essa figurinha no album? (1-Sim / 0-Nao): ");
+            scanf("%d", &escolha);
+            
+            if (escolha == 1) {
+                meu_album->figurinhas[posicao].colada = 1;
+                printf("\n>> FOI! A cartinha do %s foi colada no album!\n", meu_album->figurinhas[posicao].nome_Jogador);
+            } else {
+                printf("\n>> Operacao cancelada. A cartinha continua solta por ai.\n");
+            }//else de colada ou nao
+        }//quer colar?
+    }//else de procura de figurinhas
+}//funcao
+
+void Exclui_Figurinha(Album *meu_album){
+    char nome[51];
+
+        setbuf(stdin,NULL);
+        printf("\n>> Digite o nome do jogador: \n");
+        fgets(nome,50,stdin);
+        nome[strcspn(nome,"\n")] = '\0';
+
+    int posicao = Procura_Jogador(meu_album, nome);
+
+    if (posicao == -1){
+        printf("\nvoce ainda nao achou esse jogador!\n");
+    }else{
+        for (int i = posicao; i < meu_album->quantidade_atual - 1; i++){
+            meu_album->figurinhas[i] = meu_album->figurinhas[i+1];
+        }//for
+        
+        meu_album->quantidade_atual--;
+
+        printf("\nFIGURINHA EXCLUIDA!!!\n");
+    }//else
+}//funcao
