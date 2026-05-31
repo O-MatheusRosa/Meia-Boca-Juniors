@@ -46,4 +46,9 @@ int Ordena_lista_Bin(const void *a, const void *b);
 
 void Sanitiza_Nome(Album *album);
 
+void Abre_Pacotinho(Album *catalogo, Album *meu_album);
+
+void Alterar_Figurinha(Album *meu_album);
+
+void Exclui_Figurinha(Album *meu_album);
 #endif

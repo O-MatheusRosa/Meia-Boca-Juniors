@@ -32,6 +32,9 @@ int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apena
 
         pedaco = strtok(leitura_linha,",");
         strcpy(pedaco_temporario.codigo,pedaco);
+        if (pedaco == NULL) {
+            continue; // Se a linha for vazia, ele pula pra proxima
+        }
         //pega o pedaço, que no caso é o codigo da fig, tipo BRA001
 
         pedaco = strtok(NULL,",");
@@ -46,7 +49,7 @@ int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apena
         strcpy(pedaco_temporario.grupo,pedaco);
         //referente ao grupo
 
-        pedaco = strtok(NULL,",\n");
+        pedaco = strtok(NULL,",\r\n");
         strcpy(pedaco_temporario.raridade,pedaco);
         //tipo
 
@@ -110,6 +113,8 @@ int Carrega_Bin(Album * album, const char *nome_arquivo){
     album->figurinhas = (Dados_Figurinha*) malloc(album->quantidade_atual * sizeof(Dados_Figurinha));
 
     fread(album->figurinhas,sizeof(Dados_Figurinha),album->quantidade_atual,arquivo);
+
+    album->quantidade_maxima = album->quantidade_atual;
 
     fclose(arquivo);
 

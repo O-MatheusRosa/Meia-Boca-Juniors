@@ -1,5 +1,5 @@
 
-SRC = src/main.c src/arquivos.c src/album.c
+SRC = src/main.c src/arquivos.c src/album.c src/utilitarios.c
 INCLUDES = -I include
 
 ifeq ($(OS),Windows_NT)
