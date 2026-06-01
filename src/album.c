@@ -97,6 +97,11 @@ void Abre_Pacotinho(Album *catalogo, Album *meu_album){
 
    Animacao_Loading();
 
+   if (catalogo->quantidade_atual == 0) {
+        printf(VERMELHO "\n[ERRO] O catalogo esta vazio (CSV nao carregou)! Nao tem como sortear.\n" RESET);
+        return; 
+    }//caso n abra
+
     for (int i = 0; i < 7; i++){
         int sorteado = rand() % catalogo->quantidade_atual;
 
@@ -245,7 +250,7 @@ void Adiciona_Figurinha(Album *catalogo){
 
     catalogo->quantidade_atual++;
 
-    FILE *arquivo = fopen("data/figurinhas2026.csv", "a"); // Ajuste o caminho se estiver na pasta data/
+    FILE *arquivo = fopen("figurinhas2026.csv", "a"); // Ajuste o caminho
     
     if (arquivo != NULL) {
         fprintf(arquivo, "\n%s;%s;%s;%s", catalogo->figurinhas[pos].codigo, catalogo->figurinhas[pos].nome_Jogador, catalogo->figurinhas[pos].secao, catalogo->figurinhas[pos].raridade);

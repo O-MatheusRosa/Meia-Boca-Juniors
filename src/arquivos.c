@@ -25,47 +25,43 @@ int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apena
     fgets(leitura_linha, sizeof(leitura_linha),arquivo);
     //aqui ele pega o cabeçalho, pq ele n me ajuda muito
 
-    while (fgets(leitura_linha, sizeof(leitura_linha),arquivo) != NULL){ //ele pega linha enqt tiver
+    while (fgets(leitura_linha, sizeof(leitura_linha), arquivo) != NULL) { 
         
         Dados_Figurinha pedaco_temporario;
         char *pedaco;
 
-        pedaco = strtok(leitura_linha,",");
-        strcpy(pedaco_temporario.codigo,pedaco);
+       
+        pedaco = strtok(leitura_linha, ";,"); 
         if (pedaco == NULL) {
-            continue; // Se a linha for vazia, ele pula pra proxima
+            continue;
         }
-        //pega o pedaço, que no caso é o codigo da fig, tipo BRA001
+        strcpy(pedaco_temporario.codigo, pedaco);
 
-        pedaco = strtok(NULL,",");
-        strcpy(pedaco_temporario.nome_Jogador,pedaco);
-        //pedaço referente ao nome do jogador
+        pedaco = strtok(NULL, ";,");
+        if (pedaco != NULL) strcpy(pedaco_temporario.nome_Jogador, pedaco);
 
-        pedaco = strtok(NULL,",");
-        strcpy(pedaco_temporario.secao,pedaco);
-        //referente a categoria
+        pedaco = strtok(NULL, ";,");
+        if (pedaco != NULL) strcpy(pedaco_temporario.secao, pedaco);
 
-        pedaco = strtok(NULL,",");
-        strcpy(pedaco_temporario.grupo,pedaco);
-        //referente ao grupo
+        pedaco = strtok(NULL, ";,");
+        if (pedaco != NULL) strcpy(pedaco_temporario.grupo, pedaco);
 
-        pedaco = strtok(NULL,",\r\n");
-        strcpy(pedaco_temporario.raridade,pedaco);
-        //tipo
+        pedaco = strtok(NULL, ";,\r\n");
+        if (pedaco != NULL) strcpy(pedaco_temporario.raridade, pedaco);
 
         pedaco_temporario.colada = 0;
         pedaco_temporario.quantidade_repetidas = 0;  
         
         if (album->quantidade_atual == album->quantidade_maxima){
-            album->quantidade_maxima *= 2; // se estiver lotado a qntd maxima, dobra o tamanho maximo
+            album->quantidade_maxima *= 2; 
 
-            album->figurinhas = (Dados_Figurinha*) realloc(album->figurinhas, album->quantidade_maxima * sizeof(Dados_Figurinha)); // da um realloc do tamanho do vetor
+            album->figurinhas = (Dados_Figurinha*) realloc(album->figurinhas, album->quantidade_maxima * sizeof(Dados_Figurinha)); 
 
             if (album->figurinhas == NULL){
-                printf("\nErro ao realocar a memória referente ao album->figurinhas\n");
+                printf("\nErro ao realocar a memoria referente ao album->figurinhas\n");
                 return 0;
-            }//um if pra avisar se deu erro na realocação do tamanho do vetor            
-        }//if
+            }//ultimo if           
+        }//realloc
         album->figurinhas[album->quantidade_atual] = pedaco_temporario;
         album->quantidade_atual++;
     }//while
@@ -113,8 +109,12 @@ int Carrega_Bin(Album * album, const char *nome_arquivo){
     album->figurinhas = (Dados_Figurinha*) malloc(album->quantidade_atual * sizeof(Dados_Figurinha));
 
     fread(album->figurinhas,sizeof(Dados_Figurinha),album->quantidade_atual,arquivo);
-
-    album->quantidade_maxima = album->quantidade_atual;
+    
+    if (album->quantidade_atual == 0) {
+        album->quantidade_maxima = 10; 
+    } else {
+        album->quantidade_maxima = album->quantidade_atual;
+    }
 
     fclose(arquivo);
 

@@ -45,18 +45,25 @@ int main(){
     
 //-------------------------------------incializa o album---------------------------------------------------
 Album meu_album;
+meu_album.figurinhas = NULL;
+meu_album.quantidade_atual = 0;
+meu_album.quantidade_maxima = 0;
+
 Album catalago_geral;
+catalago_geral.figurinhas = NULL;
+catalago_geral.quantidade_atual = 0;
+catalago_geral.quantidade_maxima = 0;
 
 inicializa_Album(&meu_album);
 inicializa_Album(&catalago_geral);
 
-Carrega_Csv(&catalago_geral,"data/figurinhas2026.csv");
+Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
 Sanitiza_Nome(&catalago_geral);
 //--------------------------------------------------------------------------------------------------------
 
      
 //-----------------------------------carrega o album--------------------------------------------------------
-if (Carrega_Bin(&meu_album,"data/album.bin")){
+if (Carrega_Bin(&meu_album,"album.dat")){
     printf(VERDE "\n\n>> Arquivo encontrado! Album carregado do HD.\n" RESET);
 }else{
     printf("\n\n>> Primeiro uso. Album zerado\n\n");
@@ -100,7 +107,7 @@ do{
         
         switch (op){
             case 1:
-                printf("\n>> No momento o album tem %d figurinhas. Aqui sao elas:\n", meu_album.quantidade_atual);
+                printf("\n>> Opcao 1:");
                 
                 Mostra_Album(&meu_album);
         break;     
@@ -162,7 +169,7 @@ do{
             case 0:
                 printf("\n>> Salvando e saindo do programa. Até mais\n");
                 
-                if (Salva_Bin(&meu_album, "data/album.bin")){
+                if (Salva_Bin(&meu_album, "album.dat")){
                     printf("\n>> Jogo salvo no HD!\n");
                 }else{
                     printf(VERMELHO "\n>> [!ERRO!] Algo deu errado, o jogo nao foi salvo!\n" RESET);
@@ -179,10 +186,10 @@ do{
     
    } while (op != 0);
 //----------------------------------------------------------------------------------------------------------
-    Salvar_Album_Binario(meu_album); 
+
+   Salva_Bin(&meu_album, "album.dat"); 
 
     free(catalago_geral.figurinhas);
     free(meu_album.figurinhas);
-
     return 0;
  }//final da main
