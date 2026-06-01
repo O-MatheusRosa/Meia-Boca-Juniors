@@ -9,10 +9,9 @@
 //###########################################################//
 //Funcao que abre o arquivo no hd, no caso a leitura apenas por enqnt
 //###########################################################//
-int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apenas leitura
+int Carrega_Csv(Album *album, const char *nome_arquivo){ 
 
     FILE *arquivo;
-
     char leitura_linha[301];
 
     arquivo = fopen(nome_arquivo,"r");
@@ -20,17 +19,15 @@ int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apena
     if (arquivo == NULL){
         printf("\nErro ao abrir o arquivo!\n");
         return 0;
-    }//caso de erro ao abrir o arquivo
+    }
 
     fgets(leitura_linha, sizeof(leitura_linha),arquivo);
-    //aqui ele pega o cabeçalho, pq ele n me ajuda muito
 
     while (fgets(leitura_linha, sizeof(leitura_linha), arquivo) != NULL) { 
         
         Dados_Figurinha pedaco_temporario;
         char *pedaco;
 
-       
         pedaco = strtok(leitura_linha, ";,"); 
         if (pedaco == NULL) {
             continue;
@@ -60,15 +57,15 @@ int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apena
             if (album->figurinhas == NULL){
                 printf("\nErro ao realocar a memoria referente ao album->figurinhas\n");
                 return 0;
-            }//ultimo if           
-        }//realloc
+            }           
+        }
         album->figurinhas[album->quantidade_atual] = pedaco_temporario;
         album->quantidade_atual++;
-    }//while
+    }
 
     fclose(arquivo);
     return 1;
-}//final da funcao
+}//funcao
 
 //###########################################################//
 //Funcao que vai da memoria ram pro arquivo em binario
@@ -81,44 +78,50 @@ int Salva_Bin(Album *album, const char *nome_arquivo){
 
    if (arquivo == NULL){
     return 0;
-   }//caso o arquivo nao abra
+   }
 
    fwrite(&album->quantidade_atual, sizeof(int),1,arquivo);
-
    fwrite(album->figurinhas,sizeof(Dados_Figurinha), album->quantidade_atual,arquivo);
 
    fclose(arquivo);
 
     return 1;
-}//funcao que converte pra bin
+}//funcao
 
 //###########################################################//
-//Funcao que sai do arquivo em binario e vai pra memoria ram, caminho contrario da fnc Salva_Bin
+//Funcao que sai do arquivo em binario e vai pra memoria ram (VERSAO BLINDADA)
 //###########################################################//
 int Carrega_Bin(Album * album, const char *nome_arquivo){
-    FILE *arquivo;
-
-    arquivo = fopen(nome_arquivo,"rb");
+    FILE *arquivo = fopen(nome_arquivo,"rb");
 
     if (arquivo == NULL){
-        return 0;
-    }//caso nao consiga carregar do hd pra ram
+        return 0; // Primeiro uso, arquivo nao existe
+    }//if
 
-    fread(&album->quantidade_atual,sizeof(int),1,arquivo);
+    int qtd_lida;
+    fread(&qtd_lida, sizeof(int), 1, arquivo);
 
-    album->figurinhas = (Dados_Figurinha*) malloc(album->quantidade_atual * sizeof(Dados_Figurinha));
-
-    fread(album->figurinhas,sizeof(Dados_Figurinha),album->quantidade_atual,arquivo);
-    
-    if (album->quantidade_atual == 0) {
-        album->quantidade_maxima = 10; 
+    if (qtd_lida > 0) {
+        // Usa REALLOC com ponteiro temporario para aproveitar a memoria limpa da main
+        Dados_Figurinha *temp = (Dados_Figurinha*) realloc(album->figurinhas, qtd_lida * sizeof(Dados_Figurinha));
+        
+        if (temp != NULL) {
+            album->figurinhas = temp;
+            
+            // Le e garante que salvou a quantidade real que conseguiu puxar do HD
+            size_t lidos = fread(album->figurinhas, sizeof(Dados_Figurinha), qtd_lida, arquivo);
+            album->quantidade_atual = lidos; 
+            album->quantidade_maxima = lidos;
+        }//if
     } else {
-        album->quantidade_maxima = album->quantidade_atual;
-    }
+        // Se o arquivo por acaso salvou zerado, mantem a estrutura segura
+        album->quantidade_atual = 0;
+        album->quantidade_maxima = 10;
+    }//else
 
     fclose(arquivo);
-
     return 1;
-}//final da funcao que abre o arquivo
+}//funcao
+
 
 
