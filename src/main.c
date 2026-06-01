@@ -87,6 +87,7 @@ do{
         printf("3. Pesquisar figurinha especifica\n");
         printf("4. Alterar dados de uma figurinha\n");
         printf("5. Excluir uma figurinha\n");
+        printf("6. Incluir uma nova figurinha\n");
         printf("0. Sair (e salvar o progresso!)\n");
         printf("========================================\n");
         printf("Escolha uma opcao: ");
@@ -152,6 +153,12 @@ do{
 //-----------------------------------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------------------------
+            case 6:
+                printf("\n>> Opcao 6:\n");
+
+                Adiciona_Figurinha(&catalago_geral);
+            break;
+//-----------------------------------------------------------------------------------------------------------
             case 0:
                 printf("\n>> Salvando e saindo do programa. Até mais\n");
                 
@@ -172,6 +179,10 @@ do{
     
    } while (op != 0);
 //----------------------------------------------------------------------------------------------------------
-   
+    Salvar_Album_Binario(meu_album); 
+
+    free(catalago_geral.figurinhas);
+    free(meu_album.figurinhas);
+
     return 0;
  }//final da main

@@ -204,3 +204,56 @@ void Exclui_Figurinha(Album *meu_album){
         printf("\nFIGURINHA EXCLUIDA!!!\n");
     }//else
 }//funcao
+
+void Adiciona_Figurinha(Album *catalogo){
+    printf(CIANO "\n>> [ MODO ADMINISTRADOR ] CADASTRAR NOVA FIGURINHA GLOBAL <<\n" RESET);
+
+    if (catalogo->quantidade_atual == catalogo->quantidade_maxima){
+        catalogo->quantidade_maxima *=2;
+        catalogo->figurinhas = realloc(catalogo->figurinhas, catalogo->quantidade_maxima * sizeof(Dados_Figurinha));
+
+        if (catalogo->figurinhas == NULL){
+            printf(VERMELHO "\n[ERRO FATAL] Falha ao expandir a memoria do catalogo!\n" RESET);
+            return;
+        }//caso n de o realloc
+    }//final do if
+
+    int pos = catalogo->quantidade_atual;
+    setbuf(stdin, NULL);
+
+    printf("Digite o Codigo (Ex: BRA-01): ");
+    fgets(catalogo->figurinhas[pos].codigo, 10, stdin);
+    catalogo->figurinhas[pos].codigo[strcspn(catalogo->figurinhas[pos].codigo, "\n")] = '\0';
+
+    setbuf(stdin, NULL);
+    printf("Digite o Nome do Jogador / Titulo: ");
+    fgets(catalogo->figurinhas[pos].nome_Jogador, 50, stdin);
+    catalogo->figurinhas[pos].nome_Jogador[strcspn(catalogo->figurinhas[pos].nome_Jogador, "\n")] = '\0';
+
+    setbuf(stdin, NULL);
+    printf("Digite a Secao (Ex: Brasil, Lendas): ");
+    fgets(catalogo->figurinhas[pos].secao, 30, stdin);
+    catalogo->figurinhas[pos].secao[strcspn(catalogo->figurinhas[pos].secao, "\n")] = '\0';
+
+    setbuf(stdin, NULL);
+    printf("Digite o Tipo/Raridade (Ex: Base, Ouro, Bordo): ");
+    fgets(catalogo->figurinhas[pos].raridade, 20, stdin);
+    catalogo->figurinhas[pos].raridade[strcspn(catalogo->figurinhas[pos].raridade, "\n")] = '\0';
+
+    catalogo->figurinhas[pos].colada = 0;
+    catalogo->figurinhas[pos].quantidade_repetidas = 0;
+
+    catalogo->quantidade_atual++;
+
+    FILE *arquivo = fopen("data/figurinhas2026.csv", "a"); // Ajuste o caminho se estiver na pasta data/
+    
+    if (arquivo != NULL) {
+        fprintf(arquivo, "\n%s;%s;%s;%s", catalogo->figurinhas[pos].codigo, catalogo->figurinhas[pos].nome_Jogador, catalogo->figurinhas[pos].secao, catalogo->figurinhas[pos].raridade);
+        fclose(arquivo);
+    } else {
+        printf(VERMELHO "\n[AVISO] A carta foi salva na RAM, mas houve erro ao abrir o arquivo .csv!\n" RESET);
+    }//fim do else
+
+    printf(VERDE "\n>> SUCESSO! %s foi adicionado(a) oficialmente ao universo do jogo!\n" RESET, catalogo->figurinhas[pos].nome_Jogador);
+    Som_Sucesso(); // Beep da vitoria
+}//final da fnc

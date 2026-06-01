@@ -51,4 +51,6 @@ void Abre_Pacotinho(Album *catalogo, Album *meu_album);
 void Alterar_Figurinha(Album *meu_album);
 
 void Exclui_Figurinha(Album *meu_album);
+
+void Adiciona_Figurinha(Album *catalogo);
 #endif
