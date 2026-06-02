@@ -63,7 +63,7 @@ Sanitiza_Nome(&catalago_geral);
 
      
 //-----------------------------------carrega o album--------------------------------------------------------
-if (Carrega_Bin(&meu_album,"album.dat")){
+if (Carrega_Bin(&meu_album,"save.dat")){
     printf(VERDE "\n\n>> Arquivo encontrado! Album carregado do HD.\n" RESET);
 }else{
     printf("\n\n>> Primeiro uso. Album zerado\n\n");
@@ -82,7 +82,7 @@ qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Or
 printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
 //-----------------------------------------------------------------------------------------------------------
 
-                            Limpar_Tela();
+                           // Limpar_Tela();
 
 do{
     
@@ -168,15 +168,6 @@ do{
 //-----------------------------------------------------------------------------------------------------------
             case 0:
                 printf("\n>> Salvando e saindo do programa. Até mais\n");
-                
-                if (Salva_Bin(&meu_album, "album.dat")){
-                    printf("\n>> Jogo salvo no HD!\n");
-                }else{
-                    printf(VERMELHO "\n>> [!ERRO!] Algo deu errado, o jogo nao foi salvo!\n" RESET);
-                    Som_Erro();
-                }//else
-            
-                printf(">> Finalizando jogo\n");
             break;
 //-----------------------------------------------------------------------------------------------------------
         default:
@@ -187,7 +178,13 @@ do{
    } while (op != 0);
 //----------------------------------------------------------------------------------------------------------
 
-   Salva_Bin(&meu_album, "album.dat"); 
+    if (Salva_Bin(&meu_album, "save.dat")) {
+        printf("\n>> Jogo salvo no HD!\n");
+    } else {
+        printf(VERMELHO "\n>> [!ERRO!] Algo deu errado, o jogo nao foi salvo!\n" RESET);
+        Som_Erro();
+    }//else
+    printf(">> Finalizando jogo\n"); 
 
     free(catalago_geral.figurinhas);
     free(meu_album.figurinhas);

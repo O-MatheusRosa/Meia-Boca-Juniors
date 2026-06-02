@@ -113,16 +113,22 @@ void Abre_Pacotinho(Album *catalogo, Album *meu_album){
             printf(">> Repetida: %s, ja tenho %d dela.....\n",meu_album->figurinhas[posicao].nome_Jogador,meu_album->figurinhas[posicao].quantidade_repetidas);
         }else{
 
-            if (meu_album->quantidade_atual == meu_album->quantidade_maxima){
-                    meu_album->quantidade_maxima *=2;
+        if (meu_album->quantidade_atual >= meu_album->quantidade_maxima){
+            
+            if (meu_album->quantidade_maxima == 0) {
+                meu_album->quantidade_maxima = 10;
+            } else {
+                meu_album->quantidade_maxima *= 2;
+            }//else
 
-                    meu_album->figurinhas = realloc(meu_album->figurinhas, meu_album->quantidade_maxima * sizeof(Dados_Figurinha));
-                
-                    if (meu_album->figurinhas == NULL){
-                    printf(VERMELHO "\nErro ao reallocar as figurinhas\n" RESET);
-                    return;
-                }//nao reallocou
-            }//realloc
+            Dados_Figurinha *temp = realloc(meu_album->figurinhas, meu_album->quantidade_maxima * sizeof(Dados_Figurinha));
+            
+            if (temp == NULL){
+                printf(VERMELHO "\n[ERRO] Memoria cheia! Nao deu pra expandir o album.\n" RESET);
+                return; // Sai em seguranca
+            }
+            meu_album->figurinhas = temp;
+        }//if de verificação se encheu ou nao a memoria 
 
                 meu_album->figurinhas[meu_album->quantidade_atual] = catalogo->figurinhas[sorteado];
                 
