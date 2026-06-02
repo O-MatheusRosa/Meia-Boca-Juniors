@@ -37,8 +37,8 @@ void inicializa_Album(Album *album){
 int main(){
 
 //----------------uma forma de fazer o windows reconhecer acentos-----------------------------------------
-    #ifdef _WIN32
-        SetConsoleOutputCP(1252); 
+#ifdef _WIN32
+SetConsoleOutputCP(1252); 
     #endif
         setlocale(LC_ALL, "Portuguese");   
 //--------------------------------------------------------------------------------------------------------
@@ -61,6 +61,7 @@ Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
 Sanitiza_Nome(&catalago_geral);
 //--------------------------------------------------------------------------------------------------------
 
+                                    Limpar_Tela();
      
 //-----------------------------------carrega o album--------------------------------------------------------
 if (Carrega_Bin(&meu_album,"save.dat")){
@@ -82,7 +83,6 @@ qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Or
 printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
 //-----------------------------------------------------------------------------------------------------------
 
-                           // Limpar_Tela();
 
 do{
     
@@ -97,7 +97,7 @@ do{
         printf("6. Incluir uma nova figurinha\n");
         printf("0. Sair (e salvar o progresso!)\n");
         printf("========================================\n");
-        printf("Escolha uma opcao: ");
+        printf(AMARELO "Escolha uma opcao: " RESET);
         //opções
         
         setbuf(stdin, NULL);
