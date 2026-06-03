@@ -126,7 +126,7 @@ void Abre_Pacotinho(Album *catalogo, Album *meu_album){
             if (temp == NULL){
                 printf(VERMELHO "\n[ERRO] Memoria cheia! Nao deu pra expandir o album.\n" RESET);
                 return; // Sai em seguranca
-            }
+            }//if d eerro de realloc de memoria temporaria
             meu_album->figurinhas = temp;
         }//if de verificação se encheu ou nao a memoria 
 

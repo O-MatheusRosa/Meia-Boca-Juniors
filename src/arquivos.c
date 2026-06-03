@@ -107,7 +107,7 @@ int Carrega_Bin(Album * album, const char *nome_arquivo){
     }//caso nao consiga carregar do hd pra ram
 
     int qnt_lida = 0;
-    // LÊ APENAS UMA VEZ! (O único inteiro que tem lá)
+    //leitura do cabeçalho, jogo ele fora
     fread(&qnt_lida, sizeof(int), 1, arquivo);
 
     if (qnt_lida > 0){
