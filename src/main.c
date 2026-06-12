@@ -42,7 +42,12 @@ int main(void){
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             //inicia as texturas do menu, e o som
-        Texture2D fundo = LoadTexture("assets/fundo.png");
+        Image imagem_gigante = LoadImage("assets/fundo_pixel.png");
+
+        ImageResize(&imagem_gigante, 1280, 720);
+
+        Texture2D fundo = LoadTextureFromImage(imagem_gigante);
+
         Music musica_menu = LoadMusicStream("assets/musica1.mp3");
 
 
@@ -54,16 +59,25 @@ int acao = Tela_Home(fundo,musica_menu);
 
 if(acao == 1){
     printf("\nClicou na taca\n");
-    
-    Texture2D fundo_jogo = LoadTexture("assets/mapa.png");
-    //Music musica_jogo = LoadMusicStream("assets/musica2.mp3");
-    
-    Tela_Jogo(fundo_jogo,musica_menu);
+
+    Image imagem_mapa = LoadImage("assets/mapa_dia.png");
+    ImageResize(&imagem_mapa, 1280, 720);
+    Texture2D fundo_jogo = LoadTextureFromImage(imagem_mapa);
+    UnloadImage(imagem_mapa); 
+
+    StopMusicStream(musica_menu); 
+
+    Music musica_cidade = LoadMusicStream("assets/som_ambiente.mp3"); 
+    PlayMusicStream(musica_cidade);
+
+    Tela_Jogo(fundo_jogo, musica_cidade);
 
     UnloadTexture(fundo_jogo);
-    }else{
-        printf("\nFechou a janela, saindo.....\n");
-    }//final do if
+    UnloadMusicStream(musica_cidade); 
+
+} else {
+    printf("\nFechou a janela, saindo.....\n");
+}
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 //-------------------------------------incializa o album---------------------------------------------------

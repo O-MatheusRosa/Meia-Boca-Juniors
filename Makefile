@@ -1,5 +1,5 @@
 
-SRC = src/main.c src/arquivos.c src/album.c src/utilitarios.c src/textura.c
+SRC = src/main.c src/arquivos.c src/album.c src/utilitarios.c src/textura.c src/diltu.c
 
 
 INCLUDES = -I include
