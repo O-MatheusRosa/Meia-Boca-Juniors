@@ -5,62 +5,45 @@
 
 int Tela_Home(Texture2D fundo, Music musica){
 
-    Font fonte_brasil = LoadFontEx("assets/wc2026.ttf",80,0,0);
-    Rectangle botao_jogar = { 570, 450, 160, 70 };
-    Rectangle botao_sair = {570,560,160,70};
+    Font fonte_brasil = LoadFontEx("assets/Minecraft.ttf",80,0,0);
+    Rectangle botao_jogar = { 560,640,180,70};
 
-    Color verde = {0, 148, 64, 255};
+    Color dourado = {173, 139, 3, 255};
+    Color menos_dourado = {217, 174, 4, 255};
 
     while (!WindowShouldClose()){
         UpdateMusicStream(musica);
 
         Vector2 mouse = GetMousePosition();//pega o x e y da ponta do mouse
         bool mouse_em_cima_jogar = CheckCollisionPointRec(mouse,botao_jogar);
-        bool mouse_em_cima_sair = CheckCollisionPointRec(mouse,botao_sair);
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
 
             if (mouse_em_cima_jogar) {
                 UnloadFont(fonte_brasil);
                 return 1; 
             }//caso queira ir pra proxima
-            
-            // Verifica se o clique foi em cima do botão SAIR
-            if (mouse_em_cima_sair) {
-                UnloadFont(fonte_brasil);
-                return 0;
-            }//fim so if caso queira sair  
         }//butaum pressionado
         
         BeginDrawing();
-        ClearBackground(BLACK);
-        DrawTexture(fundo,0,0,WHITE);
+            ClearBackground(BLACK);
+            DrawTexture(fundo,0,0,WHITE);
 
-        Vector2 posicao_texto = {580,450};
-        Vector2 posicao_sair = {599,560};
+            Vector2 posicao_texto = {570,645};
 
-        if (mouse_em_cima_jogar){
-            DrawTextEx(fonte_brasil,"JOGAR",posicao_texto,80,2,verde);
-        }else{
-            DrawTextEx(fonte_brasil,"JOGAR",posicao_texto,80,2,BLACK);
-        }//final do else
-
-        if (mouse_em_cima_sair){
-            DrawTextEx(fonte_brasil,"SAIR",posicao_sair,80,2,RED);
-        }else{
-            DrawTextEx(fonte_brasil,"SAIR",posicao_sair,80,2,BLACK);
-        }//final do else
-        
-
-        //DrawRectangleRec(botao_sair, Fade(RED,0.5f));//um esboço pra saber onde ta o butaum
+            if (mouse_em_cima_jogar){
+                DrawTextEx(fonte_brasil,"JOGAR",posicao_texto,40,2,dourado);
+            }else{
+                DrawTextEx(fonte_brasil,"JOGAR",posicao_texto,40,2,BLACK);
+            }//final do else
+            
+            //DrawRectangleRec(botao_jogar, Fade(RED,0.5f));//um esboço pra saber onde ta o butaum
         EndDrawing();
     }//final da fnc
 
     UnloadFont(fonte_brasil);
     return 0;
 }//parte grafica do menu
-
-
 
 void Tela_Jogo(Texture2D fundo_jogo, Music musica){
 
@@ -90,7 +73,7 @@ void Tela_Jogo(Texture2D fundo_jogo, Music musica){
     while (!WindowShouldClose()){
         UpdateMusicStream(musica);
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse = GetMousePosition();
 
                 if (CheckCollisionPointPoly(mouse, utfpr, quantidade_pontos)) {
