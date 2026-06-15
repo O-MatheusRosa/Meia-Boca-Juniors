@@ -3,6 +3,258 @@
 #include <string.h>
 #include "raylib.h"
 #include "../include/textura.h"
+/////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////
+//&&&&&&&&&&&&&&&&&&&   BET DE FUTEBOL  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+void Tela_Futebol(Music musica,float *saldo_jogador){
+    int fase_copa = 0;
+    int cooldown_tela = 30;//tava com bug de tela, pulava o mapa
+
+    int aposta_jogo1 = -1;
+    int aposta_jogo2 = -1;
+    int resultado_jogo1 = -1;
+    int resultado_jogo2 = -1;
+    float ganhos_totais = 0.0f;
+    int gols_j1_e = 0, gols_j1_d = 0; // Gols Jogo 1 (Esquerda e Direita)
+    int gols_j2_e = 0, gols_j2_d = 0; // Gols Jogo 2 (Esquerda e Direita)
+    
+    float tempo_inicio = 0.0;
+
+    char* todos_times[48] = {
+        "RSA", "GER", "KSA", "ALG", "ARG", "AUS", "AUT", "BEL", "BIH", "BRA", 
+        "CPV", "CAN", "QAT", "COL", "KOR", "CIV", "CRO", "CUR", "EGY", "ECU", 
+        "SCO", "ESP", "USA", "FRA", "GHA", "HAI", "NED", "ENG", "IRN", "IRQ", 
+        "JPN", "JOR", "MAR", "MEX", "NOR", "NZL", "PAN", "PAR", "POR", "RDC", 
+        "CZE", "SEN", "SWE", "SUI", "TUN", "TUR", "URU", "UZB"
+    };
+
+    char* nomes_completos[48] = {
+        "AFRICA DO SUL", "ALEMANHA", "A. SAUDITA", "ARGELIA", "ARGENTINA", "AUSTRALIA", "AUSTRIA", "BELGICA", "BOSNIA", "BRASIL", 
+        "CABO VERDE", "CANADA", "CATAR", "COLOMBIA", "C. DO SUL", "C. MARFIM", "CROACIA", "CURACAU", "EGITO", "EQUADOR", 
+        "ESCOCIA", "ESPANHA", "EUA", "FRANCA", "GANA", "HAITI", "HOLANDA", "INGLATERRA", "IRA", "IRAQUE", 
+        "JAPAO", "JORDANIA", "MARROCOS", "MEXICO", "NORUEGA", "N. ZELANDIA", "PANAMA", "PARAGUAI", "PORTUGAL", "RD CONGO", 
+        "REP. TCHECA", "SENEGAL", "SUECIA", "SUICA", "TUNISIA", "TURQUIA", "URUGUAI", "UZBEQUISTAO"
+    };
+
+    // 1º Time: Roda livre (0 a 47)
+    int t1 = rand() % 48;
+    
+    // 2º Time
+    int t2 = rand() % 48;
+    while(t2 == t1) {
+        t2 = rand() % 48; 
+    }
+    
+    // 3º Time
+    int t3 = rand() % 48;
+    while(t3 == t1 || t3 == t2) {
+        t3 = rand() % 48;
+    }
+    
+    // 4º Time
+    int t4 = rand() % 48;
+    while(t4 == t1 || t4 == t2 || t4 == t3) {
+        t4 = rand() % 48;
+    }
+
+    Image img_futebol = LoadImage("assets/FUTEBOLBET.png"); 
+    ImageResize(&img_futebol, 1280, 720);
+    Texture2D fundo_futebol = LoadTextureFromImage(img_futebol);
+    UnloadImage(img_futebol);
+
+    PauseMusicStream(musica);
+    Music musica_futebol = LoadMusicStream("assets/bet-nova.mp3");
+    PlayMusicStream(musica_futebol);
+    SetMusicVolume(musica_futebol,0.5f);
+
+    Texture2D bandeiras[48];
+    
+    for (int i = 0; i < 48; i++) {
+        bandeiras[i] = LoadTexture(TextFormat("assets/bandeiras/%s.png", todos_times[i]));
+    }//carrega as 48 bandeirinhas
+    
+    while (!WindowShouldClose()){
+        UpdateMusicStream(musica_futebol);
+        Vector2 mouse = GetMousePosition();
+        
+        if (cooldown_tela > 0){
+            cooldown_tela--;
+        }//tenta arrumar o bug de pular a tela
+        
+        if (IsKeyReleased(KEY_ESCAPE) && fase_copa == 0 && cooldown_tela == 0) {
+            break;
+        }//saida
+        
+    // Jogo 1 (Painel da Esquerda)
+    Rectangle hitbox_b1 = { 59, 200, 98, 95 };  // Bandeira 1 (Esquerda)
+    Rectangle hitbox_b2 = { 499, 200, 98, 95 }; // Bandeira 2 (Direita)
+    
+    // Jogo 2 (Painel da Direita)
+    Rectangle hitbox_b3 = { 683, 200, 98, 95 }; // Bandeira 3 (Esquerda)
+    Rectangle hitbox_b4 = { 1123, 200, 98, 95 };// Bandeira 4 (Direita)
+
+        BeginDrawing();
+
+            DrawTexture(fundo_futebol, 0, 0, WHITE); 
+
+            DrawText(TextFormat("%.2f", *saldo_jogador), 1100, 575, 30, GREEN);
+            
+            // BANDEIRA 1 (Jogo 1 - Esquerda)
+            Rectangle fonte_t1 = { 0, 0, bandeiras[t1].width, bandeiras[t1].height }; // Tamanho real da foto original
+            DrawTexturePro(bandeiras[t1], fonte_t1, hitbox_b1, (Vector2){0,0}, 0.0f, WHITE);
+
+            // BANDEIRA 2 (Jogo 1 - Direita)
+            Rectangle fonte_t2 = { 0, 0, bandeiras[t2].width, bandeiras[t2].height };
+            DrawTexturePro(bandeiras[t2], fonte_t2, hitbox_b2, (Vector2){0,0}, 0.0f, WHITE);
+
+            // BANDEIRA 3 (Jogo 2 - Esquerda)
+            Rectangle fonte_t3 = { 0, 0, bandeiras[t3].width, bandeiras[t3].height };
+            DrawTexturePro(bandeiras[t3], fonte_t3, hitbox_b3, (Vector2){0,0}, 0.0f, WHITE);
+
+            // BANDEIRA 4 (Jogo 2 - Direita)
+            Rectangle fonte_t4 = { 0, 0, bandeiras[t4].width, bandeiras[t4].height };
+            DrawTexturePro(bandeiras[t4], fonte_t4, hitbox_b4, (Vector2){0,0}, 0.0f, WHITE);    
+
+            if (fase_copa == 0) {
+                if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && cooldown_tela == 0) {
+                    // Jogo 1 (Painel da Esquerda)
+                    if (CheckCollisionPointRec(mouse, hitbox_b1)){
+                         aposta_jogo1 = 0; 
+                    }// 0 = Esquerda
+                    else if (CheckCollisionPointRec(mouse, hitbox_b2)){
+                         aposta_jogo1 = 1;
+                     } // 1 = Direita
+
+                    // Jogo 2 (Painel da Direita)
+                    if (CheckCollisionPointRec(mouse, hitbox_b3)){
+                        aposta_jogo2 = 0;
+                    } 
+
+                    else if (CheckCollisionPointRec(mouse, hitbox_b4)) aposta_jogo2 = 1;
+                }//butaum    
+
+                DrawText(nomes_completos[t1], 60, 320, 30, WHITE);
+                DrawText(nomes_completos[t2], 390, 320, 30, WHITE);
+                DrawText(nomes_completos[t3], 684, 320, 30, WHITE);
+                DrawText(nomes_completos[t4], 1023, 320, 30, WHITE);
+
+                if (aposta_jogo1 == 0) DrawRectangleLinesEx(hitbox_b1, 5, YELLOW);
+                if (aposta_jogo1 == 1) DrawRectangleLinesEx(hitbox_b2, 5, YELLOW);
+                if (aposta_jogo2 == 0) DrawRectangleLinesEx(hitbox_b3, 5, YELLOW);
+                if (aposta_jogo2 == 1) DrawRectangleLinesEx(hitbox_b4, 5, YELLOW);
+
+                Rectangle btn_apostar = { 540, 540, 200, 60 }; 
+                
+                int qtd_apostas = 0;
+                if (aposta_jogo1 != -1) qtd_apostas++;
+                if (aposta_jogo2 != -1) qtd_apostas++;
+
+                DrawRectangleRec(btn_apostar, (qtd_apostas > 0) ? DARKGREEN : GRAY);
+                DrawRectangleLinesEx(btn_apostar, 3, WHITE);
+                DrawText("APOSTAR", 570, 560, 30, WHITE);
+
+                if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouse, btn_apostar) && cooldown_tela == 0) {
+                    
+                    float custo_total = qtd_apostas * 3.50; // Cada jogo custa 3.50
+
+                    if (qtd_apostas > 0 && *saldo_jogador >= custo_total) {
+                        *saldo_jogador -= custo_total; // Debita a grana
+                        
+                        tempo_inicio = GetTime(); 
+                        fase_copa = 1; 
+                    }//apostou e foi pra parte 1
+                }//apostou
+            }//aposta em si,primeira parte
+            else if (fase_copa == 1) {
+
+                float tempo_passado = GetTime() - tempo_inicio;
+                
+                int minutos_futebol = (int)(tempo_passado * 10); 
+                
+                if (minutos_futebol > 90){
+                    minutos_futebol = 90;
+                }//tempo
+
+                DrawText("JOGO COMECOU! BOLA ROLANDO...", 310, 310, 40, RED);
+                DrawText(TextFormat("%02d MINUTOS", minutos_futebol), 550, 370, 40, WHITE);
+
+                Rectangle barra_fundo = { 340, 440, 600, 30 };
+                Rectangle barra_enchimento = { 340, 440, (tempo_passado / 9.0) * 600, 30 }; 
+
+                DrawRectangleRec(barra_fundo, DARKGRAY);
+                DrawRectangleRec(barra_enchimento, RED);
+                DrawRectangleLinesEx(barra_fundo, 3, WHITE);
+
+                if (tempo_passado >= 9.0) {  
+                    // Sorteia os vencedores (0 ou 1)
+                    resultado_jogo1 = rand() % 2;
+                    resultado_jogo2 = rand() % 2;
+
+                    ganhos_totais = 0.0f;
+                    if (aposta_jogo1 == resultado_jogo1) ganhos_totais += 7.00;
+                    if (aposta_jogo2 == resultado_jogo2) ganhos_totais += 7.00;
+
+                    *saldo_jogador += ganhos_totais;
+
+                    fase_copa = 2;
+                }//if final da aposta
+            }//apostou, so falta o resultado 
+            else if (fase_copa == 2) {
+
+                Rectangle popup = { 340, 150, 600, 450 };
+                DrawRectangleRec(popup, Fade(BLACK, 0.95f));
+                DrawRectangleLinesEx(popup, 4, GREEN);
+
+                DrawText("FIM DE JOGO!", 520, 180, 40, WHITE);
+
+                DrawText("JOGO 1:", 400, 260, 25, LIGHTGRAY);
+                if (resultado_jogo1 == 0) DrawText(TextFormat("VENCEU: %s", nomes_completos[t1]), 520, 260, 25, YELLOW);
+                else DrawText(TextFormat("VENCEU: %s", nomes_completos[t2]), 520, 260, 25, SKYBLUE);
+
+                // Mostra quem ganhou o Jogo 2
+                DrawText("JOGO 2:", 400, 320, 25, LIGHTGRAY);
+                if (resultado_jogo2 == 0) DrawText(TextFormat("VENCEU: %s", nomes_completos[t3]), 520, 320, 25, WHITE);
+                else DrawText(TextFormat("VENCEU: %s", nomes_completos[t4]), 520, 320, 25, BLUE);
+
+                // A Hora da Verdade: Deu Red ou Green
+                if (ganhos_totais > 0) {
+                    DrawText(TextFormat("LUCROU: R$ %.2f", ganhos_totais), 480, 400, 30, GREEN);
+                } else {
+                    DrawText("DEU RED! BANCA QUEBROU.", 450, 400, 30, RED);
+                }//msgzinha do resultado
+
+                // Botão de jogar de novo
+                Rectangle btn_ok = { 540, 500, 200, 50 };
+                DrawRectangleRec(btn_ok, DARKGRAY);
+                DrawRectangleLinesEx(btn_ok, 2, WHITE);
+                DrawText("NOVA APOSTA", 565, 515, 20, WHITE);
+
+                if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouse, btn_ok)) {
+                    aposta_jogo1 = -1; 
+                    aposta_jogo2 = -1; 
+                    ganhos_totais = 0.0f;
+                    
+                    // Sorteia times novos pra próxima rodada!
+                    t1 = rand() % 10;
+                    t2 = (t1 + 1) % 10;
+                    t3 = (t1 + 2) % 10;
+                    t4 = (t1 + 3) % 10;
+
+                    fase_copa = 0; // Joga de volta pra Fase 0
+                }//bandeirinhas
+            }//ultimo else if
+        EndDrawing();
+    }//while
+    UnloadTexture(fundo_futebol);
+}//funcao
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////////////////////
+//&&&&&&&&&&&&&&&&&&&   JOGO DO BIXO  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 typedef struct {
     int grupo;
     char nome[20];   
@@ -36,7 +288,7 @@ Bixo tabela[25] = {
     {25, "Vaca"}
 };
 
-void Tela_Bixo(float *saldo_jogador){
+void Tela_Bixo(Music musica,float *saldo_jogador){
 
     int fase_bicho = 0;
     int bicho_selecionado = -1;//vai do 0 ao 25
@@ -58,7 +310,14 @@ void Tela_Bixo(float *saldo_jogador){
     Texture2D fundo_bixo = LoadTextureFromImage(img_bixo);
     UnloadImage(img_bixo);
 
+    PauseMusicStream(musica);
+    Music musica_bicho = LoadMusicStream("assets/futebolbet.mp3");
+    PlayMusicStream(musica_bicho);
+    SetMusicVolume(musica_bicho,0.5f);
+
+
     while (!WindowShouldClose()){
+        UpdateMusicStream(musica_bicho);
         Vector2 mouse = GetMousePosition();
 
         if (cooldown_tela > 0) {
@@ -92,7 +351,7 @@ void Tela_Bixo(float *saldo_jogador){
 
                         // Se o mouse bater na hitbox
                         // Se o mouse bater na hitbox E o cooldown tiver zerado
-                        if (CheckCollisionPointRec(mouse, hitbox_animal) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && cooldown_tela == 0) {
+                    if (CheckCollisionPointRec(mouse, hitbox_animal) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && cooldown_tela == 0) {
                             bicho_selecionado = i; 
                             fase_bicho = 1;
                             cooldown_tela = 30;        
@@ -176,21 +435,8 @@ void Tela_Bixo(float *saldo_jogador){
     }//while    
     UnloadTexture(fundo_bixo);
 }//funcao
-typedef struct{
-    char codigo[4];
-    Texture2D bandeira;
-}Selecao;
-
-int Pais_Apelao(char* codigo){
-    char* fortes[] = {"BRA", "ARG", "GER", "FRA", "ESP", "ENG", "MAR", "BEL", "NED", "POR"};//TOP 10 PAISES RANKING FIFA
-
-    for (int i = 0; i < 10; i++){
-        if (strcmp(codigo,fortes[i]) == 0){
-            return 1;
-        }//pais bão,cuiudo       
-    }//for externo, que roda dos 10 paises
-    return 0;// SE FOR UM BAGRE IGUAL PARAGUAI KKKKKKKKKKKKKKKKKKKKKKKKK
-}//funcao
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 void Tela_Aposta(Music musica,float *saldo_jogador){
@@ -223,9 +469,10 @@ void Tela_Aposta(Music musica,float *saldo_jogador){
 
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && cooldown_tela == 0){
             if (CheckCollisionPointRec(mouse,btn_futebol)){
-                //
+                Tela_Futebol(musica,saldo_jogador);
+                cooldown_tela = 30;
             }else if(CheckCollisionPointRec(mouse,btn_bixo)){
-                Tela_Bixo(saldo_jogador);
+                Tela_Bixo(musica,saldo_jogador);
                 cooldown_tela = 30;
             }//chama a tela do jogo do bixo            
         }//escolhe qual jogo quer

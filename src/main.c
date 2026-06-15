@@ -69,7 +69,7 @@ if(acao == 1){
 
     StopMusicStream(musica_menu); 
 
-    Music musica_cidade = LoadMusicStream("assets/som_ambiente.mp3"); 
+    Music musica_cidade = LoadMusicStream("assets/cidade.mp3"); 
     PlayMusicStream(musica_cidade);
 
     Tela_Jogo(fundo_jogo, musica_cidade);
