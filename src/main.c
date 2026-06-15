@@ -5,14 +5,11 @@
  #include <stdlib.h>
  #include <string.h>
  #include <math.h>
- #include <locale.h>
  #include <time.h>
  #include "figurinha.h"
  #include "utilitarios.h"
-
-#ifdef _WIN32
-    #include <windows.h>
-#endif
+ #include "raylib.h"
+ #include "textura.h"
 
 //###########################################################//
 //Fnc q inicializa o album
@@ -34,15 +31,58 @@ void inicializa_Album(Album *album){
 //###########################################################//
 //Main
 //###########################################################//
-int main(){
+int main(void){
 
-//----------------uma forma de fazer o windows reconhecer acentos-----------------------------------------
-#ifdef _WIN32
-SetConsoleOutputCP(1252); 
-    #endif
-        setlocale(LC_ALL, "Portuguese");   
-//--------------------------------------------------------------------------------------------------------
-    
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%   PARTE GRAFICA   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    InitWindow(1280,720,"Meia Boca Juniors");//inicializa a tela
+    InitAudioDevice();//inicializa o audio
+    SetTargetFPS(60);//seta o fps
+
+    SetExitKey(KEY_X);
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            //inicia as texturas do menu, e o som
+        Image imagem_gigante = LoadImage("assets/fundo_pixel.png");
+
+        ImageResize(&imagem_gigante, 1280, 720);
+
+        Texture2D fundo = LoadTextureFromImage(imagem_gigante);
+
+        Music musica_menu = LoadMusicStream("assets/musica1.mp3");
+
+
+        PlayMusicStream(musica_menu);        
+        bool noMenu = true;
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+int acao = Tela_Home(fundo,musica_menu);
+
+if(acao == 1){
+    printf("\nClicou na taca\n");
+
+    Image imagem_mapa = LoadImage("assets/mapa_dia.png");
+    ImageResize(&imagem_mapa, 1280, 720);
+    Texture2D fundo_jogo = LoadTextureFromImage(imagem_mapa);
+    UnloadImage(imagem_mapa); 
+
+    StopMusicStream(musica_menu); 
+
+    Music musica_cidade = LoadMusicStream("assets/cidade.mp3"); 
+    PlayMusicStream(musica_cidade);
+
+    Tela_Jogo(fundo_jogo, musica_cidade);
+
+    UnloadTexture(fundo_jogo);
+    UnloadMusicStream(musica_cidade); 
+
+} else {
+    printf("\nFechou a janela, saindo.....\n");
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
 //-------------------------------------incializa o album---------------------------------------------------
 Album meu_album;
 meu_album.figurinhas = NULL;
@@ -83,7 +123,7 @@ qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Or
 printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
 //-----------------------------------------------------------------------------------------------------------
 
-
+/*
 do{
     
     printf(AZUL "\n========================================\n" RESET);
@@ -177,7 +217,7 @@ do{
     
    } while (op != 0);
 //----------------------------------------------------------------------------------------------------------
-
+*/
     if (Salva_Bin(&meu_album, "save.dat")) {
         printf("\n>> Jogo salvo no HD!\n");
     } else {
@@ -185,6 +225,11 @@ do{
         Som_Erro();
     }//else
     printf(">> Finalizando jogo\n"); 
+
+    UnloadTexture(fundo);
+    UnloadMusicStream(musica_menu);
+    CloseAudioDevice();
+    CloseWindow();
 
     free(catalago_geral.figurinhas);
     free(meu_album.figurinhas);
