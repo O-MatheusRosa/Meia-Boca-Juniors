@@ -44,13 +44,13 @@ int main(void){
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             //inicia as texturas do menu, e o som
-        Image imagem_gigante = LoadImage("assets/fundo_pixel.png");
+        Image imagem_gigante = LoadImage("assets/AURA.png");
 
         ImageResize(&imagem_gigante, 1280, 720);
 
         Texture2D fundo = LoadTextureFromImage(imagem_gigante);
 
-        Music musica_menu = LoadMusicStream("assets/musica1.mp3");
+        Music musica_menu = LoadMusicStream("assets/aura.mp3");
 
 
         PlayMusicStream(musica_menu);        
@@ -60,27 +60,31 @@ int main(void){
 int acao = Tela_Home(fundo,musica_menu);
 
 if(acao == 1){
-    printf("\nClicou na taca\n");
 
-    Image imagem_mapa = LoadImage("assets/mapa_dia.png");
-    ImageResize(&imagem_mapa, 1280, 720);
-    Texture2D fundo_jogo = LoadTextureFromImage(imagem_mapa);
-    UnloadImage(imagem_mapa); 
+    Image imagem_dia = LoadImage("assets/mapinha.png"); 
+    ImageResize(&imagem_dia, 1280, 720);
+    Texture2D fundo_dia = LoadTextureFromImage(imagem_dia);
+    UnloadImage(imagem_dia); 
+
+    Image imagem_noite = LoadImage("assets/mapa_noite (2).png"); 
+    ImageResize(&imagem_noite, 1280, 720);
+    Texture2D fundo_noite = LoadTextureFromImage(imagem_noite);
+    UnloadImage(imagem_noite); 
 
     StopMusicStream(musica_menu); 
 
     Music musica_cidade = LoadMusicStream("assets/cidade.mp3"); 
     PlayMusicStream(musica_cidade);
 
-    Tela_Jogo(fundo_jogo, musica_cidade);
+    Tela_Jogo(fundo_dia, fundo_noite, musica_cidade);
 
-    UnloadTexture(fundo_jogo);
+    UnloadTexture(fundo_dia);
+    UnloadTexture(fundo_noite);
     UnloadMusicStream(musica_cidade); 
 
 } else {
     printf("\nFechou a janela, saindo.....\n");
 }
-
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 //-------------------------------------incializa o album---------------------------------------------------
