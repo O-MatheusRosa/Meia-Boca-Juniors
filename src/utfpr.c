@@ -43,9 +43,9 @@ void fatiar_csv_avancado(char *linha, char colunas[9][400]) {
             char_idx++;
         }
         i++;
-    }
+    }//while
     colunas[col][char_idx] = '\0'; // Finaliza a última string
-}
+}//void fatiador de csv
 
 // Função mágica para quebrar o texto em várias linhas automaticamente se ele for maior que a largura permitida
 void DrawTextWrapped(const char *text, int x, int y, int maxWidth, int fontSize, int lineSpacing, Color color) {
@@ -85,14 +85,14 @@ void DrawTextWrapped(const char *text, int x, int y, int maxWidth, int fontSize,
             snprintf(linhaAtual, sizeof(linhaAtual), "%s", palavra);
         } else {
             snprintf(linhaAtual, sizeof(linhaAtual), "%s", tentativa);
-        }
-    }
+        }//if
+    }//while
 
     // Desenha o último pedaço de texto que sobrou no buffer
     if (linhaAtual[0] != '\0') {
         DrawText(linhaAtual, x, curY, fontSize, color);
-    }
-}
+    }//if
+}//DrawTextWrapped
 
 // Sorteia se o acerto de 2 questões vai render dinheiro ou se será "Trabalho Voluntário"
 float finalizar_turno(void) {
@@ -129,10 +129,10 @@ int carregar_questoes_csv(Questao *banco) {
         strcpy(banco[i].altD, colunas[7]);
         strcpy(banco[i].correta, colunas[8]);
         i++;
-    }
+    }//while questao
     fclose(arquivo);
     return i; // Retorna a quantidade de questões carregadas com sucesso
-}
+}//carregador de questoes
 
 // ============================================================================
 // 2. FUNÇÃO PRINCIPAL DO MÓDULO
@@ -154,28 +154,28 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
         UnloadTexture(telaPerguntas);
         UnloadTexture(telaDescanso);
         return;
-    }
+    }//if
 
     EstadoMonitoria estadoAtual = TELA_SALA_AULA; // Começa na sala de aula
 
     // Controle de tempo para a mecânica de fadiga/cansaço
     static double tempoFimUltimoTurno = -1000.0; // Valor inicial baixo garante liberação imediata no primeiro clique
-    const double TEMPO_ESPERA = 180.0;            // Tempo de descanso obrigatório em segundos
+    const double TEMPO_ESPERA = 180.0;            // Tempo de descanso obrigatório em segundos (3 minutos)
 
     // Definição das Hitboxes (áreas clicáveis do mouse) calibradas para a tela de 1280x720
     Rectangle areaMeninoVerde = { 796, 309, 178, 281 }; // Coordenadas do aluno na sala
 
     // Coordenadas dos botões das alternativas A, B, C e D dentro do "Terminal" azul
-    Rectangle botaoA = { 213, 405, 515, 90 };
-    Rectangle botaoB = { 744, 405, 515, 90 };
-    Rectangle botaoC = { 213, 505, 515, 90 };
-    Rectangle botaoD = { 744, 505, 515, 90 };
+    Rectangle botaoA = { 213, 405, 515, 90 }; // Botão da alternativa A (canto superior esquerdo do terminal)
+    Rectangle botaoB = { 744, 405, 515, 90 }; // Botão da alternativa B (canto superior direito do terminal)
+    Rectangle botaoC = { 213, 505, 515, 90 }; // Botão da alternativa C (canto inferior esquerdo do terminal)
+    Rectangle botaoD = { 744, 505, 515, 90 }; // Botão da alternativa D (canto inferior direito do terminal)
 
-    int idx_q1 = 0, idx_q2 = 0;
-    int perguntaAtual = 1;
-    int questaoSorteadaIdx = 0;
-    int respostasCorretas = 0;
-    char textoResultado[160] = "";
+    int idx_q1 = 0, idx_q2 = 0;            // Índices das duas questões sorteadas no banco de questões
+    int perguntaAtual = 1;                 // Controla se o jogador está respondendo a 1ª ou a 2ª pergunta do turno
+    int questaoSorteadaIdx = 0;            // Índice da questão que está sendo exibida no momento
+    int respostasCorretas = 0;             // Contador de quantas respostas o jogador acertou no turno atual
+    char textoResultado[160] = "";         // Texto que será exibido na tela de resultado ao final do turno
 
     // Loop principal da tela de monitoria (continua rodando até fechar a janela ou apertar ESC)
     while (!WindowShouldClose()) {
@@ -185,7 +185,7 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
         if (IsKeyPressed(KEY_ESCAPE)) {
             if (estadoAtual == TELA_SALA_AULA) break; // Sai da monitoria e volta para o mapa principal do jogo
             else estadoAtual = TELA_SALA_AULA;
-        }
+        }//if
 
         // --- MÁQUINA DE ESTADOS: ATUALIZAÇÃO DA LÓGICA ---
         switch (estadoAtual) {
@@ -193,11 +193,11 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                     // Verifica se o jogador clicou em cima do boneco do aluno
                     if (CheckCollisionPointRec(mousePos, areaMeninoVerde)) {
-                        double segundosPassados = GetTime() - tempoFimUltimoTurno;
+                        double segundosPassados = GetTime() - tempoFimUltimoTurno; // Quanto tempo já passou desde o último turno
 
-                        // Se o cooldown de 60 segundos não acabou, barra o jogador e manda ele descansar
+                        // Se o cooldown de descanso ainda não acabou, barra o jogador e manda ele descansar
                         if (segundosPassados < TEMPO_ESPERA) {
-                            estadoAtual = TELA_CANSADO;
+                            estadoAtual = TELA_CANSADO; // Vai para a tela do Prof. Muriel com o timer
                         } else {
                             // Sorteia duas questões aleatórias e garante que elas não sejam iguais
                             idx_q1 = rand() % total_carregado;
@@ -209,33 +209,33 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
                             questaoSorteadaIdx = idx_q1;
                             respostasCorretas = 0;
                             estadoAtual = TELA_VS_CODE; // Vai para a tela de resolver problemas
-                        }
-                    }
-                }
+                        }//if
+                    }//checa colisao
+                }//if para clicar no boneco do aluno
                 break;
 
             case TELA_CANSADO:
                 // Se o tempo acabar enquanto o jogador olha a tela do Prof. Muriel, libera o acesso automaticamente
                 if (GetTime() - tempoFimUltimoTurno >= TEMPO_ESPERA) {
                     estadoAtual = TELA_SALA_AULA;
-                }
+                }//if
                 break;
 
             case TELA_VS_CODE: {
-                char respostaEscolhida[10] = "";
+                char respostaEscolhida[10] = ""; // Guarda a letra (A/B/C/D) que o jogador escolheu nesse frame
 
                 // Captura a resposta via teclado (Teclas A, B, C ou D)
-                if (IsKeyPressed(KEY_A)) strcpy(respostaEscolhida, "A");
-                else if (IsKeyPressed(KEY_B)) strcpy(respostaEscolhida, "B");
-                else if (IsKeyPressed(KEY_C)) strcpy(respostaEscolhida, "C");
-                else if (IsKeyPressed(KEY_D)) strcpy(respostaEscolhida, "D");
+                if (IsKeyPressed(KEY_A)) strcpy(respostaEscolhida, "A");       // Tecla A pressionada
+                else if (IsKeyPressed(KEY_B)) strcpy(respostaEscolhida, "B");  // Tecla B pressionada
+                else if (IsKeyPressed(KEY_C)) strcpy(respostaEscolhida, "C");  // Tecla C pressionada
+                else if (IsKeyPressed(KEY_D)) strcpy(respostaEscolhida, "D");  // Tecla D pressionada
 
                 // Ou captura a resposta via cliques do mouse nos botões do terminal
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                    if (CheckCollisionPointRec(mousePos, botaoA)) strcpy(respostaEscolhida, "A");
-                    else if (CheckCollisionPointRec(mousePos, botaoB)) strcpy(respostaEscolhida, "B");
-                    else if (CheckCollisionPointRec(mousePos, botaoC)) strcpy(respostaEscolhida, "C");
-                    else if (CheckCollisionPointRec(mousePos, botaoD)) strcpy(respostaEscolhida, "D");
+                    if (CheckCollisionPointRec(mousePos, botaoA)) strcpy(respostaEscolhida, "A");      // Clicou no botão A
+                    else if (CheckCollisionPointRec(mousePos, botaoB)) strcpy(respostaEscolhida, "B"); // Clicou no botão B
+                    else if (CheckCollisionPointRec(mousePos, botaoC)) strcpy(respostaEscolhida, "C"); // Clicou no botão C
+                    else if (CheckCollisionPointRec(mousePos, botaoD)) strcpy(respostaEscolhida, "D"); // Clicou no botão D
                 }
 
                 // Se o jogador escolheu uma alternativa (por clique ou teclado)
@@ -272,10 +272,10 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
                         tempoFimUltimoTurno = GetTime(); // Salva a marca exata de tempo em que terminou o trabalho
 
                         estadoAtual = TELA_RESULTADO; // Avança para exibir o feedback
-                    }
-                }
+                    }//if
+                }//escolheu resposta
                 break;
-            }
+            }//escolher resposta
 
             case TELA_RESULTADO:
                 // Sai da tela de resultados ao clicar ou apertar ENTER
@@ -283,7 +283,7 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
                     estadoAtual = TELA_SALA_AULA;
                 }
                 break;
-        }
+        }//switch estadoAtual
 
         // --- RENDERIZAÇÃO GRÁFICA (DESENHAR NA TELA) ---
         BeginDrawing();
@@ -293,17 +293,21 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
                 DrawTexture(monitoria, 0, 0, WHITE);
                 DrawText("Clique no aluno para responder sua pergunta", 30, 30, 20, GREEN);
                 DrawText(TextFormat("Saldo: R$ %.2f", *saldo_jogador), 30, 60, 20, GOLD);
-            }
+            }//if
             else if (estadoAtual == TELA_CANSADO) {
                 // Desenha a imagem do laboratório com o Prof. Muriel e o balão branco de fala
                 DrawTexture(telaDescanso, 0, 0, WHITE);
 
                 // Calcula os segundos regressivos baseados no tempo estipulado
                 int segundosRestantes = (int)(TEMPO_ESPERA - (GetTime() - tempoFimUltimoTurno)) + 1;
-                if (segundosRestantes < 0) segundosRestantes = 0;
+                if (segundosRestantes < 0) segundosRestantes = 0; // Nunca deixa o contador ficar negativo
 
-                // Formata o texto do timer
-                const char* textoTimer = TextFormat("Tempo restante: %d s", segundosRestantes);
+                // Converte o total de segundos restantes para minutos e segundos (formato mm:ss)
+                int minutosRestantes = segundosRestantes / 60;       // Quantos minutos cheios ainda restam
+                int segundosResto = segundosRestantes % 60;          // Sobra de segundos que não forma um minuto cheio
+
+                // Formata o texto do timer já no formato "minutos:segundos"
+                const char* textoTimer = TextFormat("Tempo restante: %d:%02d", minutosRestantes, segundosResto);
                 int fontSize = 17;
 
                 // Coordenadas calibradas para centralizar o texto certinho no espaço vazio do balão branco
@@ -315,7 +319,7 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
                 
                 // Desenha o timer em PRETO (BLACK) para ficar legível por cima do fundo branco do balão
                 DrawText(textoTimer, balaoCentroX - (larguraTexto / 2), balaoY, fontSize, BLACK);
-            }
+            }//if
             else if (estadoAtual == TELA_VS_CODE) {
                 DrawTexture(telaPerguntas, 0, 0, WHITE);
 
@@ -352,7 +356,7 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
                 DrawTextWrapped(TextFormat("[D] %s", q.altD), (int)botaoD.x + 10, (int)botaoD.y + 5, (int)botaoD.width - 20, 15, 4, GREEN);
 
                 DrawText("Clique ou aperte [A, B, C, D] no teclado", termX + 18, termY + termH - 25, 14, LIGHTGRAY);
-            }
+            }//if
             else if (estadoAtual == TELA_RESULTADO) {
                 DrawTexture(telaPerguntas, 0, 0, WHITE);
 
@@ -372,10 +376,10 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
 
                 DrawText(TextFormat("Saldo atual: R$ %.2f", *saldo_jogador), 330, 360, 18, GOLD);
                 DrawText("Pressione ENTER ou Clique para voltar", 330, 410, 14, GRAY);
-            }
+            }//if
 
         EndDrawing(); // Envia os comandos de desenho para a GPU processar a tela
-    }
+    }//WindowShouldClos
 
     // ============================================================================
     // 3. LIMPEZA DE MEMÓRIA (Garbage Collection Manual do C/Raylib)
@@ -385,4 +389,4 @@ void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
     UnloadTexture(monitoria);
     UnloadTexture(telaPerguntas);
     UnloadTexture(telaDescanso); 
-}
+}//ExecutarModuloMonitoria
