@@ -25,7 +25,7 @@ void Tela_Futebol(Music musica,float *saldo_jogador);
 void Tela_Bixo(Music musica,float *saldo_jogador);
 
 
-void ExecutarModuloMonitoria(float *saldo_jogador);
+void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia);
 void fatiar_csv_avancado(char *linha, char colunas[9][400]);
 int carregar_questoes_csv(Questao *banco);
 

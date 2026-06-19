@@ -137,12 +137,14 @@ int carregar_questoes_csv(Questao *banco) {
 // ============================================================================
 // 2. FUNÇÃO PRINCIPAL DO MÓDULO
 // ============================================================================
-void ExecutarModuloMonitoria(float *saldo_jogador) {
+void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia) {
     // Carrega os arquivos de imagem (texturas) para a memória de vídeo
-    Texture2D monitoria = LoadTexture("assets/monitoria.png");
+    // Escolhe a versão de dia ou de noite de acordo com o turno atual do jogo
+    Texture2D monitoria = deDia ? LoadTexture("assets/monitoria.png")
+                                 : LoadTexture("assets/tela_monitoria_noite.png");
     Texture2D telaPerguntas = LoadTexture("assets/tela_perguntas.png");
-    Texture2D telaDescanso = LoadTexture("assets/tela_descanso_monitoria.png"); // Imagem customizada com o balão
-
+    Texture2D telaDescanso = deDia ? LoadTexture("assets/tela_descanso_monitoria.png")
+                                    : LoadTexture("assets/tela_descanso_monitoria_noite.png"); // Imagem customizada com o balão
     Questao banco_questoes[TOTAL_BANCO];
     int total_carregado = carregar_questoes_csv(banco_questoes);
 
@@ -158,7 +160,7 @@ void ExecutarModuloMonitoria(float *saldo_jogador) {
 
     // Controle de tempo para a mecânica de fadiga/cansaço
     static double tempoFimUltimoTurno = -1000.0; // Valor inicial baixo garante liberação imediata no primeiro clique
-    const double TEMPO_ESPERA = 60.0;            // Tempo de descanso obrigatório em segundos
+    const double TEMPO_ESPERA = 180.0;            // Tempo de descanso obrigatório em segundos
 
     // Definição das Hitboxes (áreas clicáveis do mouse) calibradas para a tela de 1280x720
     Rectangle areaMeninoVerde = { 796, 309, 178, 281 }; // Coordenadas do aluno na sala

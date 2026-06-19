@@ -77,11 +77,11 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
 
 
             if (CheckCollisionPointPoly(mouse, utfpr, quantidade_pontos)) {
-               ExecutarModuloMonitoria(&saldo_jogador);//boni
+               ExecutarModuloMonitoria(&saldo_jogador, tempoJogo.deDia);//boni
             }
 
             if (CheckCollisionPointPoly(mouse, diltu, pontos_diltu)) {
-                Tela_Diltu(musica, &saldo_jogador, tempoJogo.deDia);
+               Tela_Diltu(musica, &saldo_jogador, tempoJogo.deDia);
             }
         }
 
@@ -102,7 +102,6 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
         } else {
             DrawText("NOITE", 90, 20, 20, PURPLE);
         }
-
 
         EndDrawing();
     }
