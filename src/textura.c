@@ -38,7 +38,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
 
     Relogio tempoJogo;
     tempoJogo.tempoAcumulado = 0.0f;
-    tempoJogo.duracaoTurno = 60.0f; // 6 minutos para virar o turno
+    tempoJogo.duracaoTurno = 6.0f; // 6 minutos para virar o turno
     tempoJogo.deDia = true;          // Começa de dia
     tempoJogo.horaGame = 6;          // Começa as 6h da manhã
 
@@ -104,22 +104,10 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
     }
 }
 
-int Tela_Home(Texture2D fundo, Music musica_menu) {
-    
-    const char* textoPrincipal = "Congratulations, you're moving to the next level.\nYour next opponent is...";
-    const char* textoSecundario = "YOU"; 
-    
-    int tamanhoTexto = TextLength(textoPrincipal);
-    int letrasDesenhadas = 0; 
-    int frameCounter = 0;     
-
-    int delayDrop = 0;
-    bool dropAconteceu = false; 
+int Tela_Home(Texture2D fundo, Music musica_menu) { 
 
     int piscarJogar = 0;
-    bool mostrarJogar = false;
-
-    float tempoAnterior = 0.0f;
+    bool mostrarJogar = true; 
 
     Font fontePixel = LoadFontEx("assets/minecraft.ttf", 60, 0, 250);
     
@@ -127,62 +115,30 @@ int Tela_Home(Texture2D fundo, Music musica_menu) {
         
         UpdateMusicStream(musica_menu);
 
-        float tempoMusica = GetMusicTimePlayed(musica_menu);
-
-        if (tempoMusica < tempoAnterior) {
-            letrasDesenhadas = 0;
-            frameCounter = 0;
-            delayDrop = 0;
-            dropAconteceu = false;
+        piscarJogar++;
+        if (piscarJogar > 30) {
+            mostrarJogar = !mostrarJogar;
             piscarJogar = 0;
-            mostrarJogar = false;
         }
-        tempoAnterior = tempoMusica;
-
-        if (letrasDesenhadas < tamanhoTexto) {
-            frameCounter++;
-            if (frameCounter >= 3) { 
-                frameCounter = 0;
-                letrasDesenhadas++;
-            }
-        } 
-        else if (!dropAconteceu) {
-            delayDrop++;
-            if (delayDrop >= 40) { 
-                dropAconteceu = true;
-            }
+        
+        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+            UnloadFont(fontePixel); 
+            return 1;
         }
 
-        if (dropAconteceu) {
-            piscarJogar++;
-            if (piscarJogar > 30) {
-                mostrarJogar = !mostrarJogar;
-                piscarJogar = 0;
-            }
-            
-            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-                UnloadFont(fontePixel); 
-                return 1;
-            }
-        }
-
+       
         BeginDrawing();
         ClearBackground(BLACK);
 
         DrawTexture(fundo, 0, 0, WHITE);
 
-        DrawTextEx(fontePixel, TextSubtext(textoPrincipal, 0, letrasDesenhadas), (Vector2){ 50, 20 }, 40, 2, LIGHTGRAY);
-
-        if (dropAconteceu) {
-            DrawTextEx(fontePixel, textoSecundario, (Vector2){ 50, 140 }, 80, 2, MAROON);
-            if (mostrarJogar) {
-                DrawTextEx(fontePixel, " JOGAR\n[ENTER]", (Vector2){ 1120, 600 }, 30, 2, RED);
-            }
-        }
+        if (mostrarJogar) {
+            DrawTextEx(fontePixel, " JOGAR\n[ENTER]", (Vector2){ 580, 650 }, 30, 2, YELLOW);
+        }//final do if else
 
         EndDrawing();
-    }
+    }//while de desenho
 
     UnloadFont(fontePixel);
     return 0; 
-}
+}//fnc

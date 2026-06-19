@@ -449,6 +449,7 @@ void Tela_Aposta(Music musica,float *saldo_jogador){
     ImageResize(&imagem_aposta,1280,720);
     Texture2D textura_aposta = LoadTextureFromImage(imagem_aposta);
     UnloadImage(imagem_aposta);
+    
 
     PauseMusicStream(musica);
     Music musica_bet = LoadMusicStream("assets/bet.mp3");
@@ -511,10 +512,12 @@ int Tela_Diltu(Music musica, float *saldo_jogador, bool deDia) {
     
     PauseMusicStream(musica);
     Music musica_dilto;
+
     if (deDia == true) {
-        musica_dilto = LoadMusicStream("assets/musica_dilto_dia.mp3"); // sertanejo
+        musica_dilto = LoadMusicStream("assets/patioposto.mp3"); // sertanejo
     } else {
-        musica_dilto = LoadMusicStream("assets/musica_dilto_noite.mp3"); // Mandelao
+        musica_dilto = LoadMusicStream("assets/mandelao.mp3"); // Mandelao
+        SetMusicVolume(musica_dilto,0.7f);
     }
     PlayMusicStream(musica_dilto);
     SetMusicVolume(musica_dilto, 0.2f);

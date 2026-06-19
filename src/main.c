@@ -44,13 +44,13 @@ int main(void){
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             //inicia as texturas do menu, e o som
-        Image imagem_gigante = LoadImage("assets/AURA.png");
+        Image imagem_gigante = LoadImage("assets/fundopika.png");
 
         ImageResize(&imagem_gigante, 1280, 720);
 
         Texture2D fundo = LoadTextureFromImage(imagem_gigante);
 
-        Music musica_menu = LoadMusicStream("assets/aura.mp3");
+        Music musica_menu = LoadMusicStream("assets/musica1.mp3");
 
 
         PlayMusicStream(musica_menu);        
@@ -75,6 +75,7 @@ if(acao == 1){
 
     Music musica_cidade = LoadMusicStream("assets/cidade.mp3"); 
     PlayMusicStream(musica_cidade);
+    SetMusicVolume(musica_cidade,0.4f);
 
     Tela_Jogo(fundo_dia, fundo_noite, musica_cidade);
 
