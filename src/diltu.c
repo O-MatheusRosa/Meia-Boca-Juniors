@@ -10,6 +10,7 @@
 void Tela_Futebol(Music musica,float *saldo_jogador){
     int fase_copa = 0;
     int cooldown_tela = 30;//tava com bug de tela, pulava o mapa
+    int aviso_sem_grana = 0;
 
     int aposta_jogo1 = -1;
     int aposta_jogo2 = -1;
@@ -37,7 +38,7 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
         "REP. TCHECA", "SENEGAL", "SUECIA", "SUICA", "TUNISIA", "TURQUIA", "URUGUAI", "UZBEQUISTAO"
     };
 
-    // 1º Time: Roda livre (0 a 47)
+    //escolhe qlqr time de 0 a 48
     int t1 = rand() % 48;
     
     // 2º Time
@@ -58,6 +59,27 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
         t4 = rand() % 48;
     }
 
+    float multiplicador_time1, multiplicador_time2, multiplicador_time3, multiplicador_time4;
+
+    multiplicador_time1 = 1.20f + (rand() % 100) / 100.0f; // Os miozin
+    multiplicador_time2 = 2.50f + (rand() % 200) / 100.0f; // Zebra
+
+    //jogo 1
+    if (rand() % 2 == 0) { 
+        float valor_temporario = multiplicador_time1; 
+        multiplicador_time1 = multiplicador_time2; 
+        multiplicador_time2 = valor_temporario; 
+    }
+
+    // Jogo 2
+    multiplicador_time3 = 1.20f + (rand() % 100) / 100.0f; 
+    multiplicador_time4 = 2.50f + (rand() % 200) / 100.0f; 
+    if (rand() % 2 == 0) { 
+        float valor_temporario = multiplicador_time3; 
+        multiplicador_time3 = multiplicador_time4; 
+        multiplicador_time4 = valor_temporario; 
+    }
+
     Image img_futebol = LoadImage("assets/FUTEBOLBET.png"); 
     ImageResize(&img_futebol, 1280, 720);
     Texture2D fundo_futebol = LoadTextureFromImage(img_futebol);
@@ -66,7 +88,7 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
     PauseMusicStream(musica);
     Music musica_futebol = LoadMusicStream("assets/bet-nova.mp3");
     PlayMusicStream(musica_futebol);
-    SetMusicVolume(musica_futebol,0.5f);
+    SetMusicVolume(musica_futebol,0.4f);
 
     Texture2D bandeiras[48];
     
@@ -134,10 +156,17 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
                     else if (CheckCollisionPointRec(mouse, hitbox_b4)) aposta_jogo2 = 1;
                 }//butaum    
 
+                ////////////////////////////////////////////////////////////////////////////////////
+                /////////////// nomes dos times embaixo da bandeira  ///////////////////////////////
                 DrawText(nomes_completos[t1], 60, 320, 30, WHITE);
                 DrawText(nomes_completos[t2], 390, 320, 30, WHITE);
                 DrawText(nomes_completos[t3], 684, 320, 30, WHITE);
                 DrawText(nomes_completos[t4], 1023, 320, 30, WHITE);
+
+                DrawText(TextFormat("PAGA: %.2fx", multiplicador_time1), 60, 400, 25, GREEN);
+                DrawText(TextFormat("PAGA: %.2fx", multiplicador_time2), 390, 400, 25, GREEN);
+                DrawText(TextFormat("PAGA: %.2fx", multiplicador_time3), 684, 400, 25, GREEN);
+                DrawText(TextFormat("PAGA: %.2fx", multiplicador_time4), 1023, 400, 25, GREEN);
 
                 if (aposta_jogo1 == 0) DrawRectangleLinesEx(hitbox_b1, 5, YELLOW);
                 if (aposta_jogo1 == 1) DrawRectangleLinesEx(hitbox_b2, 5, YELLOW);
@@ -163,8 +192,15 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
                         
                         tempo_inicio = GetTime(); 
                         fase_copa = 1; 
-                    }//apostou e foi pra parte 1
+                    }else{
+                        aviso_sem_grana = 120;
+                    }
                 }//apostou
+
+                if (aviso_sem_grana > 0) {
+                    DrawText("SALDO INSUFICIENTE PARA A APOSTA!", 380, 620, 30, RED);
+                    aviso_sem_grana--;
+                }
             }//aposta em si,primeira parte
             else if (fase_copa == 1) {
 
@@ -192,8 +228,15 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
                     resultado_jogo2 = rand() % 2;
 
                     ganhos_totais = 0.0f;
-                    if (aposta_jogo1 == resultado_jogo1) ganhos_totais += 7.00;
-                    if (aposta_jogo2 == resultado_jogo2) ganhos_totais += 7.00;
+                   
+                    if (aposta_jogo1 == resultado_jogo1) {
+                        if (resultado_jogo1 == 0) ganhos_totais += (3.50 * multiplicador_time1);
+                        else ganhos_totais += (3.50 * multiplicador_time2);
+                    }
+                    if (aposta_jogo2 == resultado_jogo2) {
+                        if (resultado_jogo2 == 0) ganhos_totais += (3.50 * multiplicador_time3);
+                        else ganhos_totais += (3.50 * multiplicador_time4);
+                    }
 
                     *saldo_jogador += ganhos_totais;
 
@@ -235,11 +278,24 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
                     aposta_jogo2 = -1; 
                     ganhos_totais = 0.0f;
                     
-                    // Sorteia times novos pra próxima rodada!
-                    t1 = rand() % 10;
-                    t2 = (t1 + 1) % 10;
-                    t3 = (t1 + 2) % 10;
-                    t4 = (t1 + 3) % 10;
+                    // Sorteia times novos
+                    t1 = rand() % 48;
+                    t2 = rand() % 48;
+                    while(t2 == t1) t2 = rand() % 48;
+                    t3 = rand() % 48;
+                    while(t3 == t1 || t3 == t2) t3 = rand() % 48;
+                    t4 = rand() % 48;
+                    while(t4 == t1 || t4 == t2 || t4 == t3) t4 = rand() % 48;
+
+
+
+                    multiplicador_time1 = 1.20f + (rand() % 100) / 100.0f; 
+                    multiplicador_time2 = 2.50f + (rand() % 200) / 100.0f; 
+                    if (rand() % 2 == 0) { float valor_temporario = multiplicador_time1; multiplicador_time1 = multiplicador_time2; multiplicador_time2 = valor_temporario; }
+
+                    multiplicador_time3 = 1.20f + (rand() % 100) / 100.0f; 
+                    multiplicador_time4 = 2.50f + (rand() % 200) / 100.0f; 
+                    if (rand() % 2 == 0) { float valor_temporario = multiplicador_time3; multiplicador_time3 = multiplicador_time4; multiplicador_time4 = valor_temporario; }
 
                     fase_copa = 0; // Joga de volta pra Fase 0
                 }//bandeirinhas
@@ -304,6 +360,7 @@ void Tela_Bixo(Music musica,float *saldo_jogador){
 
 
     int cooldown_tela = 30;//tava com bug de tela, pulava o mapa
+    int aviso_sem_grana = 0;
 
     Image img_bixo = LoadImage("assets/bixo (2).png"); 
     ImageResize(&img_bixo, 1280, 720);
@@ -313,7 +370,7 @@ void Tela_Bixo(Music musica,float *saldo_jogador){
     PauseMusicStream(musica);
     Music musica_bicho = LoadMusicStream("assets/futebolbet.mp3");
     PlayMusicStream(musica_bicho);
-    SetMusicVolume(musica_bicho,0.5f);
+    SetMusicVolume(musica_bicho,0.3f);
 
 
     while (!WindowShouldClose()){
@@ -397,12 +454,13 @@ void Tela_Bixo(Music musica,float *saldo_jogador){
                                 } else {
                                     status_resultado = 2; // é muito otario mesmo (perdeu)
                                 }
-
+                                
                                 fase_bicho = 2;
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                
+                                //////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             } else {; 
                                 fase_bicho = 0; 
+                                aviso_sem_grana = 120;
                             }//n tem grana
                         }//parte monetaria, de gasto 
                     }//mouse
@@ -430,6 +488,12 @@ void Tela_Bixo(Music musica,float *saldo_jogador){
                         fase_bicho = 0;
                     }//if
                 }//final de tudo, devolve o dienheiro ganho
+
+                if (aviso_sem_grana > 0) {
+                    DrawRectangle(380, 330, 520, 60, Fade(BLACK, 0.8f));
+                    DrawText("Ta duro dorme!", 400, 350, 25, RED);
+                    aviso_sem_grana--; // Vai diminuindo até dar 0 e sumir
+                }
                 
             EndDrawing();
     }//while    
@@ -449,11 +513,12 @@ void Tela_Aposta(Music musica,float *saldo_jogador){
     ImageResize(&imagem_aposta,1280,720);
     Texture2D textura_aposta = LoadTextureFromImage(imagem_aposta);
     UnloadImage(imagem_aposta);
+    
 
     PauseMusicStream(musica);
     Music musica_bet = LoadMusicStream("assets/bet.mp3");
     PlayMusicStream(musica_bet);
-    SetMusicVolume(musica_bet,0.5f);
+    SetMusicVolume(musica_bet,0.3f);
 
     while (!WindowShouldClose()){
         UpdateMusicStream(musica_bet);
@@ -493,19 +558,31 @@ void Tela_Aposta(Music musica,float *saldo_jogador){
     ResumeMusicStream(musica);   
 }//fnc de aposta
 
-
-int Tela_Diltu(Music musica, float *saldo_jogador){
+///////////////////////////////////////////////////////////////////////////////////////////////
+int Tela_Diltu(Music musica, float *saldo_jogador, bool deDia) {
     
     Rectangle hitbox_bet = { 1080, 240, 200, 300 };
     int cooldown_tela = 30;
 
-    Image imagem_dilto = LoadImage("assets/dilto.png");
+    Image imagem_dilto;
+    if (deDia == true) {
+        imagem_dilto = LoadImage("assets/dilto.png"); // Imagem do bar de dia
+    } else {
+        imagem_dilto = LoadImage("assets/dilto_noite.png"); // Imagem do bar insalubre
+    }
     ImageResize(&imagem_dilto, 1280, 720);
     Texture2D fundo_dilto = LoadTextureFromImage(imagem_dilto);
     UnloadImage(imagem_dilto);
     
     PauseMusicStream(musica);
-    Music musica_dilto = LoadMusicStream("assets/musica_dilto2.mp3");
+    Music musica_dilto;
+
+    if (deDia == true) {
+        musica_dilto = LoadMusicStream("assets/patioposto.mp3"); // sertanejo
+    } else {
+        musica_dilto = LoadMusicStream("assets/mandelao.mp3"); // Mandelao
+        SetMusicVolume(musica_dilto,0.7f);
+    }
     PlayMusicStream(musica_dilto);
     SetMusicVolume(musica_dilto, 0.2f);
  
@@ -520,8 +597,8 @@ int Tela_Diltu(Music musica, float *saldo_jogador){
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             // se clicar na maquina de bet
             if (CheckCollisionPointRec(mouse, hitbox_bet) && cooldown_tela == 0) {
-                // chama a fnc de qnt dinehiro tem
-                Tela_Aposta(musica_dilto,saldo_jogador); 
+                // chama a fnc de qnt dinheiro tem
+                Tela_Aposta(musica_dilto, saldo_jogador); 
                 cooldown_tela = 30;
             }//if
         }//if
@@ -538,5 +615,5 @@ int Tela_Diltu(Music musica, float *saldo_jogador){
 
     UnloadTexture(fundo_dilto);
     UnloadMusicStream(musica_dilto);
-    ResumeMusicStream(musica);
+    ResumeMusicStream(musica); 
 }//fnc

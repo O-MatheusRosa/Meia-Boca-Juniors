@@ -44,13 +44,15 @@ int main(void){
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             //inicia as texturas do menu, e o som
-        Image imagem_gigante = LoadImage("assets/fundo_pixel.png");
+        Image imagem_gigante = LoadImage("assets/fundopika.png");
 
         ImageResize(&imagem_gigante, 1280, 720);
 
         Texture2D fundo = LoadTextureFromImage(imagem_gigante);
 
         Music musica_menu = LoadMusicStream("assets/musica1.mp3");
+        SetMusicVolume(musica_menu,0.4f);
+
 
 
         PlayMusicStream(musica_menu);        
@@ -60,27 +62,32 @@ int main(void){
 int acao = Tela_Home(fundo,musica_menu);
 
 if(acao == 1){
-    printf("\nClicou na taca\n");
 
-    Image imagem_mapa = LoadImage("assets/mapa_dia.png");
-    ImageResize(&imagem_mapa, 1280, 720);
-    Texture2D fundo_jogo = LoadTextureFromImage(imagem_mapa);
-    UnloadImage(imagem_mapa); 
+    Image imagem_dia = LoadImage("assets/mapinha.png"); 
+    ImageResize(&imagem_dia, 1280, 720);
+    Texture2D fundo_dia = LoadTextureFromImage(imagem_dia);
+    UnloadImage(imagem_dia); 
+
+    Image imagem_noite = LoadImage("assets/mapa_noite (2).png"); 
+    ImageResize(&imagem_noite, 1280, 720);
+    Texture2D fundo_noite = LoadTextureFromImage(imagem_noite);
+    UnloadImage(imagem_noite); 
 
     StopMusicStream(musica_menu); 
 
     Music musica_cidade = LoadMusicStream("assets/cidade.mp3"); 
     PlayMusicStream(musica_cidade);
+    SetMusicVolume(musica_cidade,0.2f);
 
-    Tela_Jogo(fundo_jogo, musica_cidade);
+    Tela_Jogo(fundo_dia, fundo_noite, musica_cidade);
 
-    UnloadTexture(fundo_jogo);
+    UnloadTexture(fundo_dia);
+    UnloadTexture(fundo_noite);
     UnloadMusicStream(musica_cidade); 
 
 } else {
     printf("\nFechou a janela, saindo.....\n");
 }
-
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 //-------------------------------------incializa o album---------------------------------------------------
@@ -118,7 +125,7 @@ srand(time(NULL));
 //------------------------------------------menu-------------------------------------------------------------
 int op;
 
-//-----------------------------------------ordenação em ordem alfabetica-------------------------------------
+//-----------------------------------------ordenaï¿½ï¿½o em ordem alfabetica-------------------------------------
 qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Ordena_lista_Bin);
 printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
 //-----------------------------------------------------------------------------------------------------------
@@ -138,7 +145,7 @@ do{
         printf("0. Sair (e salvar o progresso!)\n");
         printf("========================================\n");
         printf(AMARELO "Escolha uma opcao: " RESET);
-        //opções
+        //opï¿½ï¿½es
         
         setbuf(stdin, NULL);
         scanf("%d",&op);
@@ -207,11 +214,11 @@ do{
             break;
 //-----------------------------------------------------------------------------------------------------------
             case 0:
-                printf("\n>> Salvando e saindo do programa. Até mais\n");
+                printf("\n>> Salvando e saindo do programa. Atï¿½ mais\n");
             break;
 //-----------------------------------------------------------------------------------------------------------
         default:
-             printf(VERMELHO "\n>> [ERRO] Opção inválida! Tenta de novo.\n" RESET);
+             printf(VERMELHO "\n>> [ERRO] Opï¿½ï¿½o invï¿½lida! Tenta de novo.\n" RESET);
              Som_Erro();
     }//switch
     

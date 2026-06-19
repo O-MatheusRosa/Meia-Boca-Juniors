@@ -1,8 +1,8 @@
-SRC = src/main.c src/arquivos.c src/album.c src/utilitarios.c src/textura.c src/diltu.c
+SRC = src/main.c src/arquivos.c src/album.c src/utilitarios.c src/textura.c src/diltu.c src/utfpr.c
 
 INCLUDES = -I include
 
-# O truque do professor para descobrir se é Windows ou Linux
+# O truque do professor para descobrir se ï¿½ Windows ou Linux
 ifdef OS
   OS_DETECTED := $(strip $(OS))
 else
