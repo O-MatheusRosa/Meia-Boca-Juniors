@@ -51,6 +51,8 @@ int main(void){
         Texture2D fundo = LoadTextureFromImage(imagem_gigante);
 
         Music musica_menu = LoadMusicStream("assets/musica1.mp3");
+        SetMusicVolume(musica_menu,0.4f);
+
 
 
         PlayMusicStream(musica_menu);        
@@ -75,7 +77,7 @@ if(acao == 1){
 
     Music musica_cidade = LoadMusicStream("assets/cidade.mp3"); 
     PlayMusicStream(musica_cidade);
-    SetMusicVolume(musica_cidade,0.4f);
+    SetMusicVolume(musica_cidade,0.2f);
 
     Tela_Jogo(fundo_dia, fundo_noite, musica_cidade);
 

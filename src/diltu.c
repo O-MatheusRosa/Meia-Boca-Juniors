@@ -88,7 +88,7 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
     PauseMusicStream(musica);
     Music musica_futebol = LoadMusicStream("assets/bet-nova.mp3");
     PlayMusicStream(musica_futebol);
-    SetMusicVolume(musica_futebol,0.5f);
+    SetMusicVolume(musica_futebol,0.4f);
 
     Texture2D bandeiras[48];
     
@@ -370,7 +370,7 @@ void Tela_Bixo(Music musica,float *saldo_jogador){
     PauseMusicStream(musica);
     Music musica_bicho = LoadMusicStream("assets/futebolbet.mp3");
     PlayMusicStream(musica_bicho);
-    SetMusicVolume(musica_bicho,0.5f);
+    SetMusicVolume(musica_bicho,0.3f);
 
 
     while (!WindowShouldClose()){
@@ -518,7 +518,7 @@ void Tela_Aposta(Music musica,float *saldo_jogador){
     PauseMusicStream(musica);
     Music musica_bet = LoadMusicStream("assets/bet.mp3");
     PlayMusicStream(musica_bet);
-    SetMusicVolume(musica_bet,0.5f);
+    SetMusicVolume(musica_bet,0.3f);
 
     while (!WindowShouldClose()){
         UpdateMusicStream(musica_bet);
