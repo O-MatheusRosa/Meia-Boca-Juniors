@@ -493,19 +493,29 @@ void Tela_Aposta(Music musica,float *saldo_jogador){
     ResumeMusicStream(musica);   
 }//fnc de aposta
 
-
-int Tela_Diltu(Music musica, float *saldo_jogador){
+///////////////////////////////////////////////////////////////////////////////////////////////
+int Tela_Diltu(Music musica, float *saldo_jogador, bool deDia) {
     
     Rectangle hitbox_bet = { 1080, 240, 200, 300 };
     int cooldown_tela = 30;
 
-    Image imagem_dilto = LoadImage("assets/dilto.png");
+    Image imagem_dilto;
+    if (deDia == true) {
+        imagem_dilto = LoadImage("assets/dilto.png"); // Imagem do bar de dia
+    } else {
+        imagem_dilto = LoadImage("assets/dilto_noite.png"); // Imagem do bar insalubre
+    }
     ImageResize(&imagem_dilto, 1280, 720);
     Texture2D fundo_dilto = LoadTextureFromImage(imagem_dilto);
     UnloadImage(imagem_dilto);
     
     PauseMusicStream(musica);
-    Music musica_dilto = LoadMusicStream("assets/musica_dilto2.mp3");
+    Music musica_dilto;
+    if (deDia == true) {
+        musica_dilto = LoadMusicStream("assets/musica_dilto_dia.mp3"); // sertanejo
+    } else {
+        musica_dilto = LoadMusicStream("assets/musica_dilto_noite.mp3"); // Mandelao
+    }
     PlayMusicStream(musica_dilto);
     SetMusicVolume(musica_dilto, 0.2f);
  
@@ -520,8 +530,8 @@ int Tela_Diltu(Music musica, float *saldo_jogador){
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             // se clicar na maquina de bet
             if (CheckCollisionPointRec(mouse, hitbox_bet) && cooldown_tela == 0) {
-                // chama a fnc de qnt dinehiro tem
-                Tela_Aposta(musica_dilto,saldo_jogador); 
+                // chama a fnc de qnt dinheiro tem
+                Tela_Aposta(musica_dilto, saldo_jogador); 
                 cooldown_tela = 30;
             }//if
         }//if
@@ -538,5 +548,5 @@ int Tela_Diltu(Music musica, float *saldo_jogador){
 
     UnloadTexture(fundo_dilto);
     UnloadMusicStream(musica_dilto);
-    ResumeMusicStream(musica);
+    ResumeMusicStream(musica); 
 }//fnc
