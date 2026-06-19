@@ -34,7 +34,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
     };
     int pontos_diltu = 6;
     
-    float saldo_jogador = 20000.00; // boni arruma aq dps fznd favor!!!!!!!
+    float saldo_jogador = 5.00; // boni arruma aq dps fznd favor!!!!!!!
 
     Relogio tempoJogo;
     tempoJogo.tempoAcumulado = 0.0f;
