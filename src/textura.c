@@ -12,36 +12,39 @@ typedef struct {
 
 void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
 
-    // 1. ÁREA DA UTFPR (Canto Inferior Direito)
+
+    // 1. ï¿½REA DA UTFPR (Canto Inferior Direito)
     Vector2 utfpr[] = {
+
         { 780, 430 },  // Ponto 1: Quina superior esquerda
         { 1280, 430 }, // Ponto 2: Vai reto acompanhando a rua
-        { 1280, 720 }, // Ponto 3: Desce até o chão direito
-        { 710, 720 },  // Ponto 4: Volta pelo chão até a rua
-        { 710, 500 },  // Ponto 5: Sobe reto acompanhando a calçada
-        { 780, 430 }   // Ponto 6: Faz a diagonal da rotatória e fecha
+        { 1280, 720 }, // Ponto 3: Desce atï¿½ o chï¿½o direito
+        { 710, 720 },  // Ponto 4: Volta pelo chï¿½o atï¿½ a rua
+        { 710, 500 },  // Ponto 5: Sobe reto acompanhando a calï¿½ada
+        { 780, 430 }   // Ponto 6: Faz a diagonal da rotatï¿½ria e fecha
     };
     int quantidade_pontos = 6;
 
-    // 2. ÁREA DO DILTO (Canto Inferior Esquerdo)
+    // 2. ï¿½REA DO DILTO (Canto Inferior Esquerdo)
     Vector2 diltu[] = {
         
         { 0, 430 },    // Ponto 1: Borda esquerda da tela
-        { 500, 430 },  // Ponto 2: Vai reto até a curvinha
-        { 570, 500 },  // Ponto 3: Desce a diagonal da calçada
+        { 500, 430 },  // Ponto 2: Vai reto atï¿½ a curvinha
+        { 570, 500 },  // Ponto 3: Desce a diagonal da calï¿½ada
         { 570, 720 },  // Ponto 4: Desce reto acompanhando a rua
-        { 0, 720 },    // Ponto 5: Volta pelo chão até a borda
+        { 0, 720 },    // Ponto 5: Volta pelo chï¿½o atï¿½ a borda
         { 0, 430 }     // Ponto 6: Sobe pela borda e fecha
     };
     int pontos_diltu = 6;
-    
-    float saldo_jogador = 5.00; // boni arruma aq dps fznd favor!!!!!!!
+             // Começa as 6h da manhã
+
+    float saldo_jogador = 20.00; // boni arruma aq dps fznd favor!!!!!!!
 
     Relogio tempoJogo;
     tempoJogo.tempoAcumulado = 0.0f;
-    tempoJogo.duracaoTurno = 6.0f;//360.0f o certo, q sao 6 minutoss
-    tempoJogo.deDia = true;          // Começa de dia
-    tempoJogo.horaGame = 6;          // Começa as 6h da manhã
+    tempoJogo.duracaoTurno = 360.0f; // 6 minutos para virar o turno
+    tempoJogo.deDia = true;          // Comeca de dia
+    tempoJogo.horaGame = 6;          // Comeca 6 manha
 
     while (!WindowShouldClose()) {
         UpdateMusicStream(musica);
@@ -74,12 +77,13 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse = GetMousePosition();
 
+
             if (CheckCollisionPointPoly(mouse, utfpr, quantidade_pontos)) {
-                // boni
+               ExecutarModuloMonitoria(&saldo_jogador, tempoJogo.deDia);//boni
             }
 
             if (CheckCollisionPointPoly(mouse, diltu, pontos_diltu)) {
-                Tela_Diltu(musica, &saldo_jogador, tempoJogo.deDia);
+               Tela_Diltu(musica, &saldo_jogador, tempoJogo.deDia);
             }
         }
 

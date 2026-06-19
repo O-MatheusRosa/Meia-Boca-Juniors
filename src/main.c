@@ -125,7 +125,7 @@ srand(time(NULL));
 //------------------------------------------menu-------------------------------------------------------------
 int op;
 
-//-----------------------------------------ordenação em ordem alfabetica-------------------------------------
+//-----------------------------------------ordenaï¿½ï¿½o em ordem alfabetica-------------------------------------
 qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Ordena_lista_Bin);
 printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
 //-----------------------------------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ do{
         printf("0. Sair (e salvar o progresso!)\n");
         printf("========================================\n");
         printf(AMARELO "Escolha uma opcao: " RESET);
-        //opções
+        //opï¿½ï¿½es
         
         setbuf(stdin, NULL);
         scanf("%d",&op);
@@ -214,11 +214,11 @@ do{
             break;
 //-----------------------------------------------------------------------------------------------------------
             case 0:
-                printf("\n>> Salvando e saindo do programa. Até mais\n");
+                printf("\n>> Salvando e saindo do programa. Atï¿½ mais\n");
             break;
 //-----------------------------------------------------------------------------------------------------------
         default:
-             printf(VERMELHO "\n>> [ERRO] Opção inválida! Tenta de novo.\n" RESET);
+             printf(VERMELHO "\n>> [ERRO] Opï¿½ï¿½o invï¿½lida! Tenta de novo.\n" RESET);
              Som_Erro();
     }//switch
     
