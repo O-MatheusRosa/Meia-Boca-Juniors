@@ -25,6 +25,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
 
     // 2. ÁREA DO DILTO (Canto Inferior Esquerdo)
     Vector2 diltu[] = {
+        
         { 0, 430 },    // Ponto 1: Borda esquerda da tela
         { 500, 430 },  // Ponto 2: Vai reto até a curvinha
         { 570, 500 },  // Ponto 3: Desce a diagonal da calçada
@@ -38,7 +39,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
 
     Relogio tempoJogo;
     tempoJogo.tempoAcumulado = 0.0f;
-    tempoJogo.duracaoTurno = 6.0f; // 6 minutos para virar o turno
+    tempoJogo.duracaoTurno = 6.0f;//360.0f o certo, q sao 6 minutoss
     tempoJogo.deDia = true;          // Começa de dia
     tempoJogo.horaGame = 6;          // Começa as 6h da manhã
 
