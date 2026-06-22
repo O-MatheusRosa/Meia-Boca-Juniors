@@ -10,35 +10,40 @@ typedef struct {
     int horaGame;
 } Relogio;
 
-void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
+void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *meu_album) {
 
 
-    // 1. �REA DA UTFPR (Canto Inferior Direito)
+    // 1. ÁREA DA UTFPR (Canto Inferior Direito)
     Vector2 utfpr[] = {
 
         { 780, 430 },  // Ponto 1: Quina superior esquerda
         { 1280, 430 }, // Ponto 2: Vai reto acompanhando a rua
-        { 1280, 720 }, // Ponto 3: Desce at� o ch�o direito
-        { 710, 720 },  // Ponto 4: Volta pelo ch�o at� a rua
-        { 710, 500 },  // Ponto 5: Sobe reto acompanhando a cal�ada
-        { 780, 430 }   // Ponto 6: Faz a diagonal da rotat�ria e fecha
+        { 1280, 720 }, // Ponto 3: Desce até o chão direito
+        { 710, 720 },  // Ponto 4: Volta pelo chão até a rua
+        { 710, 500 },  // Ponto 5: Sobe reto acompanhando a calçada
+        { 780, 430 }   // Ponto 6: Faz a diagonal da rotatória e fecha
     };
     int quantidade_pontos = 6;
 
-    // 2. �REA DO DILTO (Canto Inferior Esquerdo)
+    // 2. ÁREA DO DILTO (Canto Inferior Esquerdo)
     Vector2 diltu[] = {
         
         { 0, 430 },    // Ponto 1: Borda esquerda da tela
-        { 500, 430 },  // Ponto 2: Vai reto at� a curvinha
-        { 570, 500 },  // Ponto 3: Desce a diagonal da cal�ada
+        { 500, 430 },  // Ponto 2: Vai reto até a curvinha
+        { 570, 500 },  // Ponto 3: Desce a diagonal da calçada
         { 570, 720 },  // Ponto 4: Desce reto acompanhando a rua
-        { 0, 720 },    // Ponto 5: Volta pelo ch�o at� a borda
+        { 0, 720 },    // Ponto 5: Volta pelo chão até a borda
         { 0, 430 }     // Ponto 6: Sobe pela borda e fecha
     };
     int pontos_diltu = 6;
-             // Come�a as 6h da manh�
+             // Começa as 6h da manhã
 
     float saldo_jogador = 20.00; // boni arruma aq dps fznd favor!!!!!!!
+
+    //----------------------- estado da tela grafica do album -----------------------
+    bool mostrarAlbum = false; //comeca fechado, abre/fecha com a tecla A
+    int paginaAlbum = 0;       //pagina atual do album, lembrada enquanto o jogo roda
+    //---------------------------------------------------------------------------------
 
     Relogio tempoJogo;
     tempoJogo.tempoAcumulado = 0.0f;
@@ -74,7 +79,12 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
 
 
 
-        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        //tecla A abre ou fecha o album, igual um toggle
+        if (IsKeyPressed(KEY_A)) {
+            mostrarAlbum = !mostrarAlbum;
+        }//if abre/fecha album
+
+        if (!mostrarAlbum && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse = GetMousePosition();
 
 
@@ -104,6 +114,17 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica) {
         } else {
             DrawText("NOITE", 90, 20, 20, PURPLE);
         }
+
+        //dica na tela pro jogador saber que pode abrir o album
+        if (!mostrarAlbum) {
+            DrawRectangle(10, 60, 190, 30, Fade(BLACK, 0.7f));
+            DrawText("[A] Abrir album", 20, 67, 18, WHITE);
+        }
+
+        //se o jogador apertou A, desenha o album por cima de tudo
+        if (mostrarAlbum) {
+            Desenha_Album(meu_album, &paginaAlbum);
+        }//if mostra album
 
         EndDrawing();
     }

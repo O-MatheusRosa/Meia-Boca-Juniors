@@ -2,6 +2,7 @@
 #define TEXTURA_H
 
 #include "raylib.h"
+#include "figurinha.h"
 
 typedef struct {
     int id;
@@ -17,7 +18,7 @@ typedef struct {
 
 
 int Tela_Home(Texture2D fundo, Music musica);
-void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica);
+void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *meu_album);
 int Tela_Diltu(Music musica, float *saldo_jogador, bool deDia);
 void Tela_Aposta(Music musica,float *saldo_jogador);
 void Tela_Futebol(Music musica,float *saldo_jogador);
