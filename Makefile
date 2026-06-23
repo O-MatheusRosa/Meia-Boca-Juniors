@@ -2,7 +2,7 @@ SRC = src/main.c src/arquivos.c src/album.c src/utilitarios.c src/textura.c src/
 
 INCLUDES = -I include
 
-# O truque do professor para descobrir se é Windows ou Linux
+# O truque do professor para descobrir se Ã© Windows ou Linux
 ifdef OS
   OS_DETECTED := $(strip $(OS))
 else
@@ -15,7 +15,7 @@ ifeq ($(OS_DETECTED),Windows_NT)
     RUN = .\$(EXEC)
     CLEAN = del $(EXEC)
     # Aponta para a pasta do Windows que o prof enviou
-    LIBS = -L libwin -lraylib -lgdi32 -lwinmm
+    LIBS = -L libwin -lraylib -lgdi32 -lwinmm -lopengl32
 else
     # --- SE FOR LINUX (PCs da Facul / Ubuntu) ---
     EXEC = jogo
@@ -27,7 +27,7 @@ endif
 
 # 4. REGRAS DE COMPILACAO
 all:
-	gcc $(SRC) $(INCLUDES) $(LIBS) -o $(EXEC)
+	gcc $(SRC) $(INCLUDES) -o $(EXEC) $(LIBS)
 
 run: all
 	$(RUN)

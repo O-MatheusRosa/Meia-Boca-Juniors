@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Compilar Padaria",
+      "type": "shell",
+      "command": "gcc",
+      "args": [
+        "src/padaria.c",
+        "-o", "padaria",
+        "-I", "include",
+        "-L", "libwin",
+        "-lraylib",
+        "-lgdi32",
+        "-lwinmm",
+        "-lopengl32"
+      ],
+      "group": "build",
+      "problemMatcher": ["$gcc"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Compilar e Rodar",
+      "type": "shell",
+      "command": ".\\padaria.exe",
+      "dependsOn": "Compilar Padaria",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}
