@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "raylib.h"
 #include "../include/textura.h"
 
@@ -173,7 +174,9 @@ int Tela_Home(Texture2D fundo, Music musica_menu) {
     return 0; 
 }//fnc
 
-void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) { 
+
+
+void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){ 
     int fase_pacote = 0; 
     
     // --- 1. SORTEIO DAS 5 CARTAS (De 0 a 980) ---
@@ -199,9 +202,10 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) {
     }
 
     Texture2D texturas_figurinhas[5];
-    bool carta_virada[5] = {false, false, false, false, false}; 
+    int estado_carta[5] = {0, 0, 0, 0, 0}; 
+    float escala_x[5] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
 
-    // --- 2. CARREGANDO AS IMAGENS E MATANDO OS ESPAÇOS ---
+
     for (int i = 0; i < 5; i++) {
         int id_da_carta = indices_sorteados[i];
         
@@ -228,6 +232,13 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) {
 
     Texture2D textura_costas = LoadTexture("assets/figurinhas/costas.png");
 
+    Image img_pacote = LoadImage("assets/pacotinho.png");
+    ImageColorReplace(&img_pacote, WHITE, BLANK);
+    Texture2D textura_pacote = LoadTextureFromImage(img_pacote);
+    UnloadImage(img_pacote);
+
+    //Texture2D textura_pacote = LoadTexture("assets/pacotinho.png");
+
     int largura_fig = 180;  
     int altura_fig = 250;
     int espacamento = 40;
@@ -241,14 +252,44 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) {
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER)) break;
 
         BeginDrawing();
-        ClearBackground(DARKBLUE);
+        
+        Color cor_topo = { 15, 45, 100, 255 }; // Azul royal escuro
+        Color cor_base = { 5, 10, 25, 255 };   // Quase preto
+        DrawRectangleGradientV(0, 0, 1280, 720, cor_topo, cor_base);
+
+        float tempo = GetTime();
+        float brilho_luz = 0.3f + sin(tempo * 2.0f) * 0.2f;
+        DrawCircleGradient(640, 360, 450, Fade(SKYBLUE, brilho_luz), BLANK);
 
         if (fase_pacote == 0) {
-            DrawText("CLIQUE NO PACOTE PARA ABRIR!", 320, 120, 40, WHITE);
+
+            DrawText("ABRA SEU PACOTE!", 443, 103, 40, Fade(BLACK, 0.7f));
+            DrawText("ABRA SEU PACOTE!", 440, 100, 40, GOLD);
             
-            DrawRectangleRec(hitbox_pacote, GOLD);
-            DrawRectangleLinesEx(hitbox_pacote, 5, ORANGE);
-            DrawText("PACOTE", 580, 340, 25, BLACK);
+            float variacao_y = sin(tempo * 3.0f) * 10.0f; 
+            float rotacao = 0.0f;
+            
+            if (CheckCollisionPointRec(mouse, hitbox_pacote)) {
+                rotacao = sin(tempo * 40.0f) * 3.0f; 
+            }
+
+            Rectangle fonte_pacote = { 0, 0, textura_pacote.width, textura_pacote.height };
+            
+            Rectangle destino_pacote = { 
+                hitbox_pacote.x + hitbox_pacote.width / 2, 
+                hitbox_pacote.y + hitbox_pacote.height / 2 + variacao_y, 
+                hitbox_pacote.width, 
+                hitbox_pacote.height 
+            };
+            Vector2 origem = { hitbox_pacote.width / 2, hitbox_pacote.height / 2 };
+
+            Rectangle destino_sombra = destino_pacote;
+            destino_sombra.x += 15; // Desloca a sombra pra direita
+            destino_sombra.y += 15; // Desloca a sombra pra baixo
+
+            DrawTexturePro(textura_pacote, fonte_pacote, destino_sombra, origem, rotacao, Fade(BLACK, 0.6f));
+
+            DrawTexturePro(textura_pacote, fonte_pacote, destino_pacote, origem, rotacao, WHITE);
 
             if (CheckCollisionPointRec(mouse, hitbox_pacote) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                 fase_pacote = 1; 
@@ -264,39 +305,88 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) {
                 int pos_x = margem_x + i * (largura_fig + espacamento);
                 int pos_y = 220; 
 
-                Rectangle destino = { pos_x, pos_y, largura_fig, altura_fig };
+                // --- 1. EFEITO HOVER (LEVITAÇÃO) ---
+                float offset_y = 0.0f;
+                Rectangle hitbox_mouse = { pos_x, pos_y, largura_fig, altura_fig };
+                
+                // Se a carta ainda não foi clicada e o mouse tá em cima, ela sobe 15 pixels!
+                if (estado_carta[i] == 0 && CheckCollisionPointRec(mouse, hitbox_mouse)) {
+                    offset_y = -15.0f; 
+                }
 
-                if (carta_virada[i] == false) {
+                // --- 2. MATEMÁTICA DO GIRO 3D ---
+                float largura_atual = largura_fig * escala_x[i];
+                // Isso aqui mantém a carta centralizada enquanto ela encolhe e cresce
+                float pos_x_centro = pos_x + (largura_fig - largura_atual) / 2.0f; 
+
+                Rectangle destino = { pos_x_centro, pos_y + offset_y, largura_atual, altura_fig };
+                
+                // ESTADO 0: PARADA DE COSTAS
+                if (estado_carta[i] == 0) { 
                     Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
+
+                    // Sombra da carta
+                    Rectangle sombra_carta = { destino.x + 10, destino.y + 15, destino.width, destino.height };
+                    DrawRectangleRec(sombra_carta, Fade(BLACK, 0.4f));
+
                     DrawTexturePro(textura_costas, fonte_costas, destino, (Vector2){0,0}, 0.0f, WHITE);
                     
-                    if (CheckCollisionPointRec(mouse, destino)) {
-                        DrawRectangleLinesEx(destino, 4, WHITE);
-                    }
-
-                    if (CheckCollisionPointRec(mouse, destino) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                        carta_virada[i] = true;
+                    if (CheckCollisionPointRec(mouse, hitbox_mouse)) {
+                        DrawRectangleLinesEx(destino, 4, GOLD); // Brilho de seleção
                         
-                        // DEIXEI VAZIO POR ENQUANTO (Leia o aviso importante abaixo!)
+                        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                            estado_carta[i] = 1; // Inicia a animação de encolher!
+                        }
                     }
-                } 
-                else {
+                }
+
+                // ESTADO 1: ENCOLHENDO AS COSTAS (GIRANDO)
+                else if (estado_carta[i] == 1) { 
+                    escala_x[i] -= 6.0f * GetFrameTime(); // 6.0f é a velocidade do giro
+                    if (escala_x[i] <= 0.0f) {
+                        escala_x[i] = 0.0f;
+                        estado_carta[i] = 2; // Quando sumir, muda o estado pra crescer a frente!
+                    }
+                    Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
+
+                    // Sombra da carta
+                    Rectangle sombra_carta = { destino.x + 10, destino.y + 15, destino.width, destino.height };
+                    DrawRectangleRec(sombra_carta, Fade(BLACK, 0.4f));
+
+                    DrawTexturePro(textura_costas, fonte_costas, destino, (Vector2){0,0}, 0.0f, WHITE);
+                }
+                // ESTADO 2: CRESCENDO A FRENTE (REVELANDO)
+                else if (estado_carta[i] == 2) { 
+                    escala_x[i] += 6.0f * GetFrameTime();
+                    if (escala_x[i] >= 1.0f) {
+                        escala_x[i] = 1.0f;
+                        estado_carta[i] = 3; // Terminou de girar, trava no estado final!
+                        
+                        // === AQUI SEU AMIGO SALVA NO ALBUM ===
+                    }
                     Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
+                    DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
+                }
+
+                else if (estado_carta[i] == 3) { 
+                    Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
+
+                    Rectangle sombra_carta = { destino.x + 10, destino.y + 15, destino.width, destino.height };
+                    DrawRectangleRec(sombra_carta, Fade(BLACK, 0.4f));
+                    
                     DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
                     
                     int id_da_carta = indices_sorteados[i];
-                    
-                    // CORREÇÃO 2: Aqui também tem que ler o nome do catalogo_geral!
                     DrawText(catalogo_geral->figurinhas[id_da_carta].codigo, pos_x + 50, pos_y + altura_fig + 20, 20, LIGHTGRAY);
                     
                     qtd_reveladas++; 
                 }
             }
             
-            if (qtd_reveladas == 5) {
-                DrawText("Aperte ENTER ou ESC para fechar.", 440, 600, 20, GRAY);
+                if (qtd_reveladas == 5) {
+                    DrawText("Aperte ENTER ou ESC para fechar.", 440, 600, 20, GRAY);
+                }
             }
-        }
 
         EndDrawing();
     }
@@ -305,4 +395,5 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) {
         UnloadTexture(texturas_figurinhas[i]);
     }
     UnloadTexture(textura_costas); 
+    UnloadTexture(textura_pacote);
 }
