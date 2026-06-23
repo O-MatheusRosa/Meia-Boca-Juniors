@@ -37,8 +37,8 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
         { 0, 430 }     // Ponto 6: Sobe pela borda e fecha
     };
     int pontos_diltu = 6;
-             // Começa as 6h da manhã
 
+    
     float saldo_jogador = 20.00; // boni arruma aq dps fznd favor!!!!!!!
 
     //----------------------- estado da tela grafica do album -----------------------
@@ -79,14 +79,13 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
         }
 
 
-
         //tecla A abre ou fecha o album, igual um toggle
         if (IsKeyPressed(KEY_A)) {
             mostrarAlbum = !mostrarAlbum;
         }//if abre/fecha album
 
         if (IsKeyPressed(KEY_P)) {
-        Teste_AbrirPacotinho(meu_album, catalogo_geral);
+        Animacao_AbrirPacotinho(meu_album, catalogo_geral);
          }
 
         if (!mostrarAlbum && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -174,7 +173,7 @@ int Tela_Home(Texture2D fundo, Music musica_menu) {
     return 0; 
 }//fnc
 
-void Teste_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) { 
+void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) { 
     int fase_pacote = 0; 
     
     // --- 1. SORTEIO DAS 5 CARTAS (De 0 a 980) ---

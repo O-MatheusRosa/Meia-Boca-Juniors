@@ -128,7 +128,7 @@ if(acao == 1){
     printf("\nFechou a janela, saindo.....\n");
 }
 
-Teste_AbrirPacotinho(&meu_album, &catalago_geral);
+Animacao_AbrirPacotinho(&meu_album, &catalago_geral);
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
