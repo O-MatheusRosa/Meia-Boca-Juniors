@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "raylib.h"
 #include "../include/textura.h"
 
@@ -10,7 +11,7 @@ typedef struct {
     int horaGame;
 } Relogio;
 
-void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *meu_album) {
+void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *meu_album, Album *catalogo_geral){
 
 
     // 1. √ÅREA DA UTFPR (Canto Inferior Direito)
@@ -83,6 +84,10 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
         if (IsKeyPressed(KEY_A)) {
             mostrarAlbum = !mostrarAlbum;
         }//if abre/fecha album
+
+        if (IsKeyPressed(KEY_P)) {
+        Teste_AbrirPacotinho(meu_album, catalogo_geral);
+         }
 
         if (!mostrarAlbum && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse = GetMousePosition();
@@ -168,3 +173,137 @@ int Tela_Home(Texture2D fundo, Music musica_menu) {
     UnloadFont(fontePixel);
     return 0; 
 }//fnc
+
+void Teste_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) { 
+    int fase_pacote = 0; 
+    
+    // --- 1. SORTEIO DAS 5 CARTAS (De 0 a 980) ---
+    int indices_sorteados[5];
+    
+    for (int i = 0; i < 5; i++) {
+        int numero_sorteado;
+        bool repetido;
+        
+        do {
+            repetido = false;
+            numero_sorteado = rand() % 981; 
+            
+            for (int j = 0; j < i; j++) {
+                if (indices_sorteados[j] == numero_sorteado) {
+                    repetido = true;
+                    break; 
+                }
+            }
+        } while (repetido == true);
+        
+        indices_sorteados[i] = numero_sorteado;
+    }
+
+    Texture2D texturas_figurinhas[5];
+    bool carta_virada[5] = {false, false, false, false, false}; 
+
+    // --- 2. CARREGANDO AS IMAGENS E MATANDO OS ESPA«OS ---
+    for (int i = 0; i < 5; i++) {
+        int id_da_carta = indices_sorteados[i];
+        
+        // Puxa o cÛdigo sujo do cat·logo
+        const char* codigo_sujo = catalogo_geral->figurinhas[id_da_carta].codigo; 
+        
+        // Cria uma cÛpia pra gente poder limpar
+        char codigo_limpo[15];
+        strcpy(codigo_limpo, codigo_sujo);
+
+        // O ASSASSINO DE ESPA«OS:
+        // Percorre a palavra. Achou espaÁo, \r ou \n? Corta a string ali mesmo!
+        for(int k = 0; k < strlen(codigo_limpo); k++) {
+            if(codigo_limpo[k] == ' ' || codigo_limpo[k] == '\r' || codigo_limpo[k] == '\n') {
+                codigo_limpo[k] = '\0';
+                break; 
+            }
+        }
+        
+        // Agora o TextFormat vai usar o cÛdigo limpo (ex: "AUT5" em vez de "AUT5  ")
+        const char* caminho = TextFormat("assets/figurinhas/%s.png", codigo_limpo);
+        texturas_figurinhas[i] = LoadTexture(caminho);
+    }
+
+    Texture2D textura_costas = LoadTexture("assets/figurinhas/costas.png");
+
+    int largura_fig = 180;  
+    int altura_fig = 250;
+    int espacamento = 40;
+    int margem_x = (1280 - (5 * largura_fig + 4 * espacamento)) / 2; 
+
+    Rectangle hitbox_pacote = { 540, 210, 200, 300 }; 
+
+    while (!WindowShouldClose()) {
+        Vector2 mouse = GetMousePosition();
+        
+        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER)) break;
+
+        BeginDrawing();
+        ClearBackground(DARKBLUE);
+
+        if (fase_pacote == 0) {
+            DrawText("CLIQUE NO PACOTE PARA ABRIR!", 320, 120, 40, WHITE);
+            
+            DrawRectangleRec(hitbox_pacote, GOLD);
+            DrawRectangleLinesEx(hitbox_pacote, 5, ORANGE);
+            DrawText("PACOTE", 580, 340, 25, BLACK);
+
+            if (CheckCollisionPointRec(mouse, hitbox_pacote) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                fase_pacote = 1; 
+            }
+        }
+        else if (fase_pacote == 1) {
+            
+            DrawText("CLIQUE NAS CARTAS PARA REVELAR!", 310, 80, 40, GOLD);
+
+            int qtd_reveladas = 0; 
+
+            for (int i = 0; i < 5; i++) {
+                int pos_x = margem_x + i * (largura_fig + espacamento);
+                int pos_y = 220; 
+
+                Rectangle destino = { pos_x, pos_y, largura_fig, altura_fig };
+
+                if (carta_virada[i] == false) {
+                    Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
+                    DrawTexturePro(textura_costas, fonte_costas, destino, (Vector2){0,0}, 0.0f, WHITE);
+                    
+                    if (CheckCollisionPointRec(mouse, destino)) {
+                        DrawRectangleLinesEx(destino, 4, WHITE);
+                    }
+
+                    if (CheckCollisionPointRec(mouse, destino) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                        carta_virada[i] = true;
+                        
+                        // DEIXEI VAZIO POR ENQUANTO (Leia o aviso importante abaixo!)
+                    }
+                } 
+                else {
+                    Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
+                    DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
+                    
+                    int id_da_carta = indices_sorteados[i];
+                    
+                    // CORRE«√O 2: Aqui tambÈm tem que ler o nome do catalogo_geral!
+                    DrawText(catalogo_geral->figurinhas[id_da_carta].codigo, pos_x + 50, pos_y + altura_fig + 20, 20, LIGHTGRAY);
+                    
+                    qtd_reveladas++; 
+                }
+            }
+            
+            if (qtd_reveladas == 5) {
+                DrawText("Aperte ENTER ou ESC para fechar.", 440, 600, 20, GRAY);
+            }
+        }
+
+        EndDrawing();
+    }
+
+    for (int i = 0; i < 5; i++) {
+        UnloadTexture(texturas_figurinhas[i]);
+    }
+    UnloadTexture(textura_costas); 
+}

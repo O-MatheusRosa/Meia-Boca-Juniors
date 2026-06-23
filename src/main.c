@@ -33,6 +33,24 @@ void inicializa_Album(Album *album){
 //###########################################################//
 int main(void){
 
+    //-------------------------------------incializa o album---------------------------------------------------
+    Album meu_album;
+    meu_album.figurinhas = NULL;
+    meu_album.quantidade_atual = 0;
+    meu_album.quantidade_maxima = 0;
+    
+    Album catalago_geral;
+    catalago_geral.figurinhas = NULL;
+    catalago_geral.quantidade_atual = 0;
+    catalago_geral.quantidade_maxima = 0;
+    
+    inicializa_Album(&meu_album);
+    inicializa_Album(&catalago_geral);
+    
+    Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
+    Sanitiza_Nome(&catalago_geral);
+    //--------------------------------------------------------------------------------------------------------
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%   PARTE GRAFICA   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -61,23 +79,6 @@ int main(void){
             
 int acao = Tela_Home(fundo,musica_menu);
 
-//-------------------------------------incializa o album---------------------------------------------------
-Album meu_album;
-meu_album.figurinhas = NULL;
-meu_album.quantidade_atual = 0;
-meu_album.quantidade_maxima = 0;
-
-Album catalago_geral;
-catalago_geral.figurinhas = NULL;
-catalago_geral.quantidade_atual = 0;
-catalago_geral.quantidade_maxima = 0;
-
-inicializa_Album(&meu_album);
-inicializa_Album(&catalago_geral);
-
-Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
-Sanitiza_Nome(&catalago_geral);
-//--------------------------------------------------------------------------------------------------------
 
                                     Limpar_Tela();
      
@@ -116,7 +117,8 @@ if(acao == 1){
     PlayMusicStream(musica_cidade);
     SetMusicVolume(musica_cidade,0.2f);
 
-    Tela_Jogo(fundo_dia, fundo_noite, musica_cidade, &meu_album);
+    // Passa as DUAS structs!
+    Tela_Jogo(fundo_dia, fundo_noite, musica_cidade, &meu_album, &catalago_geral);
 
     UnloadTexture(fundo_dia);
     UnloadTexture(fundo_noite);
@@ -125,6 +127,9 @@ if(acao == 1){
 } else {
     printf("\nFechou a janela, saindo.....\n");
 }
+
+Teste_AbrirPacotinho(&meu_album, &catalago_geral);
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 //------------------------------------------menu-------------------------------------------------------------
