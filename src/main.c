@@ -33,24 +33,6 @@ void inicializa_Album(Album *album){
 //###########################################################//
 int main(void){
 
-    //-------------------------------------incializa o album---------------------------------------------------
-    Album meu_album;
-    meu_album.figurinhas = NULL;
-    meu_album.quantidade_atual = 0;
-    meu_album.quantidade_maxima = 0;
-    
-    Album catalago_geral;
-    catalago_geral.figurinhas = NULL;
-    catalago_geral.quantidade_atual = 0;
-    catalago_geral.quantidade_maxima = 0;
-    
-    inicializa_Album(&meu_album);
-    inicializa_Album(&catalago_geral);
-    
-    Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
-    Sanitiza_Nome(&catalago_geral);
-    //--------------------------------------------------------------------------------------------------------
-
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%   PARTE GRAFICA   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -79,6 +61,24 @@ int main(void){
             
 int acao = Tela_Home(fundo,musica_menu);
 
+//-------------------------------------incializa o album---------------------------------------------------
+Album meu_album;
+meu_album.figurinhas = NULL;
+meu_album.quantidade_atual = 0;
+meu_album.quantidade_maxima = 0;
+
+Album catalago_geral;
+catalago_geral.figurinhas = NULL;
+catalago_geral.quantidade_atual = 0;
+catalago_geral.quantidade_maxima = 0;
+
+inicializa_Album(&meu_album);
+inicializa_Album(&catalago_geral);
+
+Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
+Sanitiza_Nome(&catalago_geral);
+    Sanitiza_Secao(&catalago_geral);
+//--------------------------------------------------------------------------------------------------------
 
                                     Limpar_Tela();
      
@@ -90,11 +90,12 @@ if (Carrega_Bin(&meu_album,"save.dat")){
 }//if else
 //carrega o arq bin do hd, e se nao tiver, cria um
 Sanitiza_Nome(&meu_album);
+Sanitiza_Secao(&meu_album);
 //-----------------------------------------------------------------------------------------------------------
 
 srand(time(NULL));
 
-//-----------------------------------------ordenação em ordem alfabetica-------------------------------------
+//-----------------------------------------ordena��o em ordem alfabetica-------------------------------------
 qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Ordena_lista_Bin);
 printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
 //-----------------------------------------------------------------------------------------------------------
@@ -117,7 +118,6 @@ if(acao == 1){
     PlayMusicStream(musica_cidade);
     SetMusicVolume(musica_cidade,0.2f);
 
-    // Passa as DUAS structs!
     Tela_Jogo(fundo_dia, fundo_noite, musica_cidade, &meu_album, &catalago_geral);
 
     UnloadTexture(fundo_dia);
@@ -128,9 +128,10 @@ if(acao == 1){
     printf("\nFechou a janela, saindo.....\n");
 }
 
+
 //Teste_AbrirPacotinho(&meu_album, &catalago_geral);
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 //------------------------------------------menu-------------------------------------------------------------
 int op;
@@ -150,7 +151,7 @@ do{
         printf("0. Sair (e salvar o progresso!)\n");
         printf("========================================\n");
         printf(AMARELO "Escolha uma opcao: " RESET);
-        //opções
+        //op��es
         
         setbuf(stdin, NULL);
         scanf("%d",&op);
@@ -219,11 +220,11 @@ do{
             break;
 //-----------------------------------------------------------------------------------------------------------
             case 0:
-                printf("\n>> Salvando e saindo do programa. Até mais\n");
+                printf("\n>> Salvando e saindo do programa. At� mais\n");
             break;
 //-----------------------------------------------------------------------------------------------------------
         default:
-             printf(VERMELHO "\n>> [ERRO] Opção inválida! Tenta de novo.\n" RESET);
+             printf(VERMELHO "\n>> [ERRO] Op��o inv�lida! Tenta de novo.\n" RESET);
              Som_Erro();
     }//switch
     

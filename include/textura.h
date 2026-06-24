@@ -33,7 +33,10 @@ int Tela_Diltu(Music musica, float *saldo_jogador, bool deDia);
 void Tela_Aposta(Music musica,float *saldo_jogador);
 void Tela_Futebol(Music musica,float *saldo_jogador);
 void Tela_Bixo(Music musica,float *saldo_jogador);
-//void Teste_AbrirPacotinho(Album *meu_album, Album *catalogo_geral);
+
+
+void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral);
+
 
 void ExecutarModuloMonitoria(float *saldo_jogador, bool deDia);
 void fatiar_csv_avancado(char *linha, char colunas[9][400]);

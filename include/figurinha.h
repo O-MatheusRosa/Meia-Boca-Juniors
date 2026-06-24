@@ -9,7 +9,7 @@ typedef struct{
    char codigo[15]; //codigo da figurinha
    char nome_Jogador[60]; //titulo
    char secao[60];  //categoria do jogador ou pg, ainda tem q ver
-   char grupo[60];  //grupo q o jogador esta, tipo o Brasil é gp B,logo o jogador tbm
+   char grupo[60];  //grupo q o jogador esta, tipo o Brasil � gp B,logo o jogador tbm
    char raridade[30];   //tipo
 
    //controle de fluxo das fig
@@ -36,7 +36,7 @@ int Salva_Bin(Album *album, const char *nome_arquivo);//carrega da ram pro hd, #
 
 int Carrega_Bin(Album * album, const char *nome_arquivo);//carrega do hd pra ram
 
-int Carrega_Csv(Album *album, const char *nome_arquivo); //chama da função referente ao carregamento do csv
+int Carrega_Csv(Album *album, const char *nome_arquivo); //chama da fun��o referente ao carregamento do csv
 
 
 //###########################################################//
@@ -53,6 +53,7 @@ int Procura_Jogador(Album *album,char *nome_buscado); // procura o jogador, ##ca
 int Ordena_lista_Bin(const void *a, const void *b); 
 
 void Sanitiza_Nome(Album *album);
+void Sanitiza_Secao(Album *album);
 
 void Abre_Pacotinho(Album *catalogo, Album *meu_album);
 
