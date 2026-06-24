@@ -110,7 +110,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
 
             // <<< NOVO: clicar na padaria chama Entra_Padaria >>>
             if (CheckCollisionPointRec(mouse, areaPadaria)) {
-                Entra_Padaria(&padaria, &saldo_jogador, &tem_album, &pacotes_bolso, &figurinhas_bolso);
+                Entra_Padaria(&padaria, catalogo_geral, &saldo_jogador, &tem_album, &pacotes_bolso, &figurinhas_bolso);
             }
         }
 

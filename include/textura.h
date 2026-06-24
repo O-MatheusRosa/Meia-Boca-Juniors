@@ -9,7 +9,7 @@ typedef struct {
     float  precoAlbum;
     float  precoPacote;
     float  precoComprarFigurinhas; // valor que a padaria paga por cada figurinha vendida
-    int    FigurinhasNoBalcao[5];  // numeros das 5 figurinhas disponiveis para troca
+    char FigurinhasNoBalcao[5][15]; // codigo tipo "BRA01", ajuste o 15 se o codigo for maio  // numeros das 5 figurinhas disponiveis para troca
     int    slotUsado[5];           // 1 = slot ja trocado (indisponivel)
     time_t ultimaAtualizacao;      // momento da ultima atualizacao do balcao
 } BancaPadaria;
@@ -44,7 +44,7 @@ int carregar_questoes_csv(Questao *banco);
 
 int Tela_Home(Texture2D fundo, Music musica_menu);
 
-void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, int *pacotes_bolso, int *figurinhas_bolso);
+void Entra_Padaria(BancaPadaria *padaria, Album *catalogo_geral, float *saldo_jogador, int *tem_album, int *pacotes_bolso, int *figurinhas_bolso);
 
 
 

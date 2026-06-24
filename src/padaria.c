@@ -12,41 +12,79 @@
 // FUNCOES INTERNAS DO BALCAO
 // ============================================================
 
-static void atualizarFigurinhasBalcao(BancaPadaria *b) {
+static void atualizarFigurinhasBalcao(BancaPadaria *b, Album *catalogo) {
     for (int i = 0; i < 5; i++) {
-        b->FigurinhasNoBalcao[i] = (rand() % 981) + 1;
+        int idx = rand() % catalogo->quantidade_atual;
+        strncpy(b->FigurinhasNoBalcao[i], catalogo->figurinhas[idx].codigo, 14);
+        b->FigurinhasNoBalcao[i][14] = '\0';
+
+        // Remove espacos, \r e \n do final do codigo (lixo vindo do CSV)
+        int len = strlen(b->FigurinhasNoBalcao[i]);
+        while (len > 0 && (b->FigurinhasNoBalcao[i][len-1] == ' '  ||
+                           b->FigurinhasNoBalcao[i][len-1] == '\r' ||
+                           b->FigurinhasNoBalcao[i][len-1] == '\n')) {
+            b->FigurinhasNoBalcao[i][--len] = '\0';
+        }
+
         b->slotUsado[i] = 0;
     }
     b->ultimaAtualizacao = time(NULL);
     printf("[PADARIA] Balcao atualizado com novas figurinhas!\n");
 }
 
-static void verificaTempoDoBalcao(BancaPadaria *b) {
+static void verificaTempoDoBalcao(BancaPadaria *b, Album *catalogo) {
     double segundosPassados = difftime(time(NULL), b->ultimaAtualizacao);
     if (segundosPassados >= TEMPO_TROCA) {
-        atualizarFigurinhasBalcao(b);
+        atualizarFigurinhasBalcao(b, catalogo);
+    }
+}
+
+// Carrega (ou recarrega) as 5 texturas das figurinhas do balcao
+static void carregarTexFigurinhas(BancaPadaria *b, Texture2D texFigurinhas[5]) {
+    for (int i = 0; i < 5; i++) {
+        if (texFigurinhas[i].id != 0) UnloadTexture(texFigurinhas[i]);
+        char caminho[64];
+        sprintf(caminho, "assets/figurinhas/%s.png", b->FigurinhasNoBalcao[i]);
+        texFigurinhas[i] = LoadTexture(caminho);
+        if (texFigurinhas[i].id == 0)
+            printf("[ERRO] Figurinha nao encontrada: %s\n", caminho);
     }
 }
 
 // ============================================================
 // FUNCAO PRINCIPAL DA PADARIA
-// Chamada de dentro do Tela_Jogo() quando o jogador clica
-// na padaria no mapa.
 // ============================================================
-void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, int *pacotes_bolso, int *figurinhas_bolso) {
+void Entra_Padaria(BancaPadaria *padaria, Album *catalogo_geral, float *saldo_jogador, int *tem_album, int *pacotes_bolso, int *figurinhas_bolso) {
 
-    // --- Carrega texturas ---
-    Texture2D fundo              = LoadTexture("assets/padaria_principal.jpeg");
-    Texture2D fundoBalcao        = LoadTexture("assets/padaria_segunda.png");
-    Texture2D fundoComprar       = LoadTexture("assets/padaria_comprarpacotes.png");
-    Texture2D fundoVender        = LoadTexture("assets/padaria_venderfigurinhas.png");
-    Texture2D fundoTrocar        = LoadTexture("assets/padaria_trocarfigurinhas.png");
+    // Forca atualizacao na primeira entrada (ultimaAtualizacao == 0)
+    if (padaria->ultimaAtualizacao == 0) {
+        atualizarFigurinhasBalcao(padaria, catalogo_geral);
+    }
+
+    // --- Carrega texturas de fundo ---
+    Texture2D fundo        = LoadTexture("assets/padaria_principal.jpeg");
+    Texture2D fundoBalcao  = LoadTexture("assets/padaria_segunda.png");
+    Texture2D fundoComprar = LoadTexture("assets/padaria_comprarpacotes.png");
+    Texture2D fundoVender  = LoadTexture("assets/padaria_venderfigurinhas.png");
+    Texture2D fundoTrocar  = LoadTexture("assets/padaria_trocarfigurinhas.png");
 
     if (fundo.id == 0)        printf("[ERRO] padaria_principal.png nao encontrada!\n");
     if (fundoBalcao.id == 0)  printf("[ERRO] padaria_segunda.png nao encontrada!\n");
     if (fundoComprar.id == 0) printf("[ERRO] padaria_comprarpacotes.png nao encontrada!\n");
     if (fundoVender.id == 0)  printf("[ERRO] padaria_venderfigurinhas.png nao encontrada!\n");
     if (fundoTrocar.id == 0)  printf("[ERRO] padaria_trocarfigurinhas.png nao encontrada!\n");
+
+    // --- Carrega texturas das figurinhas do balcao ---
+    Texture2D texFigurinhas[5] = {0};
+    carregarTexFigurinhas(padaria, texFigurinhas);
+    time_t ultimaTextura = padaria->ultimaAtualizacao;
+
+    // --- DEBUG: verifica se as texturas carregaram ---
+    printf("[DEBUG] ---- Texturas do balcao ----\n");
+    for (int i = 0; i < 5; i++) {
+        printf("[DEBUG] Slot %d: codigo='%s' textura.id=%d\n",
+               i, padaria->FigurinhasNoBalcao[i], texFigurinhas[i].id);
+    }
 
     // --- Estado das telas ---
     // 0=entrada  1=menu balcao  2=comprar pacotes  3=vender figurinhas  4=trocar figurinhas
@@ -74,19 +112,31 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
     Rectangle btnOk = {885, 610, 100, 55};
 
     Rectangle btnTrocar[5] = {
-        {108, 545, 170, 50},
-        {358, 545, 170, 50},
-        {593, 545, 170, 50},
-        {800, 545, 170, 50},
-        {1028, 545, 170, 50},
+        {108, 510, 170, 50},  // era 545
+        {358, 510, 170, 50},
+        {593, 510, 170, 50},
+        {800, 510, 170, 50},
+        {1028, 510, 170, 50},
     };
+
+    // Tamanho e posicao das imagens das figurinhas na tela de troca
+    // Ajuste esses valores conforme o layout do seu fundoTrocar
+    int imgLarg  = 180;
+    int imgAltu  = 250;  // menor, para nao cobrir o botao
+    int imgTopoY = 200;  // sobe um pouco
 
     // ============================================================
     // LOOP DA PADARIA
     // ============================================================
     while (!WindowShouldClose()) {
 
-        verificaTempoDoBalcao(padaria);
+        verificaTempoDoBalcao(padaria, catalogo_geral);
+
+        // Recarrega texturas das figurinhas se o balcao foi atualizado
+        if (padaria->ultimaAtualizacao != ultimaTextura) {
+            carregarTexFigurinhas(padaria, texFigurinhas);
+            ultimaTextura = padaria->ultimaAtualizacao;
+        }
 
         // ---- ENTRADA DE TEXTO (telas 2 e 3) ----
         if (telaAtual == 2 || telaAtual == 3) {
@@ -106,19 +156,20 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
         // ---- ESC ----
         if (IsKeyPressed(KEY_ESCAPE)) {
             if (telaAtual == 0) {
-                // Sai da padaria e volta ao mapa
                 UnloadTexture(fundo);
                 UnloadTexture(fundoBalcao);
                 UnloadTexture(fundoComprar);
                 UnloadTexture(fundoVender);
                 UnloadTexture(fundoTrocar);
+                for (int i = 0; i < 5; i++)
+                    if (texFigurinhas[i].id != 0) UnloadTexture(texFigurinhas[i]);
                 return;
             } else if (telaAtual == 1) {
                 telaAtual = 0;
             } else if (telaAtual == 2 || telaAtual == 3) {
-                telaAtual  = 1;
+                telaAtual     = 1;
                 inputTexto[0] = '\0';
-                inputLen   = 0;
+                inputLen      = 0;
             } else if (telaAtual == 4) {
                 telaAtual = 1;
             }
@@ -128,12 +179,10 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Vector2 mouse = GetMousePosition();
 
-            // Tela 0: clicar no balcao para entrar
             if (telaAtual == 0 && CheckCollisionPointRec(mouse, areaBalcao)) {
                 telaAtual = 1;
             }
 
-            // Tela 1: menu do balcao
             if (telaAtual == 1) {
                 if (CheckCollisionPointRec(mouse, btn1)) opcao = 1;
                 if (CheckCollisionPointRec(mouse, btn2)) opcao = 2;
@@ -142,10 +191,9 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
                 if (CheckCollisionPointRec(mouse, btn5)) opcao = 0;
             }
 
-            // Tela 2: confirmar compra de pacotes
             if (telaAtual == 2 && CheckCollisionPointRec(mouse, btnOk)) {
-                int qtd       = atoi(inputTexto);
-                float custo   = qtd * padaria->precoPacote;
+                int qtd     = atoi(inputTexto);
+                float custo = qtd * padaria->precoPacote;
                 if (qtd <= 0) {
                     strcpy(msgFeedback, "Digite uma quantidade valida!");
                     corFeedback = RED;
@@ -153,18 +201,17 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
                     strcpy(msgFeedback, "Dinheiro insuficiente!");
                     corFeedback = RED;
                 } else {
-                    *saldo_jogador  -= custo;
-                    *pacotes_bolso  += qtd; // adiciona pacotes, nao figurinhas
+                    *saldo_jogador -= custo;
+                    *pacotes_bolso += qtd;
                     strcpy(msgFeedback, "Compra realizada com sucesso!");
                     corFeedback = GREEN;
                 }
-                timerFeedback    = 3.0f;
-                telaAtual        = 1;
-                inputTexto[0]    = '\0';
-                inputLen         = 0;
+                timerFeedback = 3.0f;
+                telaAtual     = 1;
+                inputTexto[0] = '\0';
+                inputLen      = 0;
             }
 
-            // Tela 3: confirmar venda de figurinhas
             if (telaAtual == 3 && CheckCollisionPointRec(mouse, btnOk)) {
                 int qtd = atoi(inputTexto);
                 if (qtd <= 0) {
@@ -179,13 +226,12 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
                     strcpy(msgFeedback, "Venda realizada com sucesso!");
                     corFeedback = GREEN;
                 }
-                timerFeedback    = 3.0f;
-                telaAtual        = 1;
-                inputTexto[0]    = '\0';
-                inputLen         = 0;
+                timerFeedback = 3.0f;
+                telaAtual     = 1;
+                inputTexto[0] = '\0';
+                inputLen      = 0;
             }
 
-            // Tela 4: trocar figurinhas no balcao
             if (telaAtual == 4) {
                 for (int i = 0; i < 5; i++) {
                     if (CheckCollisionPointRec(mouse, btnTrocar[i])) {
@@ -196,11 +242,9 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
                             strcpy(msgFeedback, "Sem figurinhas para trocar!");
                             corFeedback = RED;
                         } else {
-                            // Gasta 1 figurinha avulsa e ganha 1 do balcao
-                            // (a figurinha ganha deve ser registrada no Album pelo Tela_Jogo)
-                            printf("[PADARIA] Trocou pela figurinha #%d!\n", padaria->FigurinhasNoBalcao[i]);
+                            printf("[PADARIA] Trocou pela figurinha %s!\n", padaria->FigurinhasNoBalcao[i]);
+                            (*figurinhas_bolso)--;
                             padaria->slotUsado[i] = 1;
-                            // saldo nao muda: e uma troca 1x1
                             strcpy(msgFeedback, "Troca realizada com sucesso!");
                             corFeedback = GREEN;
                         }
@@ -212,13 +256,13 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
 
         // ---- SWITCH DO MENU ----
         switch (opcao) {
-            case 1: // Comprar album
+            case 1:
                 if (*tem_album) {
                     strcpy(msgFeedback, "Voce ja possui o album!");
                     corFeedback = RED;
                 } else if (padaria->qntAlbum > 0 && *saldo_jogador >= padaria->precoAlbum) {
-                    *saldo_jogador  -= padaria->precoAlbum;
-                    *tem_album       = 1;
+                    *saldo_jogador -= padaria->precoAlbum;
+                    *tem_album      = 1;
                     padaria->qntAlbum--;
                     strcpy(msgFeedback, "Album comprado com sucesso!");
                     corFeedback = GREEN;
@@ -230,38 +274,39 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
                 opcao = -1;
                 break;
 
-            case 2: // Ir para tela de comprar pacotes
+            case 2:
                 telaAtual     = 2;
                 inputTexto[0] = '\0';
                 inputLen      = 0;
                 opcao         = -1;
                 break;
 
-            case 3: // Ir para tela de trocar figurinhas
+            case 3:
                 telaAtual = 4;
                 opcao     = -1;
                 break;
 
-            case 4: // Ir para tela de vender figurinhas
+            case 4:
                 telaAtual     = 3;
                 inputTexto[0] = '\0';
                 inputLen      = 0;
                 opcao         = -1;
                 break;
 
-            case 0: // Sair da padaria
+            case 0:
                 UnloadTexture(fundo);
                 UnloadTexture(fundoBalcao);
                 UnloadTexture(fundoComprar);
                 UnloadTexture(fundoVender);
                 UnloadTexture(fundoTrocar);
+                for (int i = 0; i < 5; i++)
+                    if (texFigurinhas[i].id != 0) UnloadTexture(texFigurinhas[i]);
                 return;
 
             default:
                 break;
         }
 
-        // Atualiza timer do feedback
         if (timerFeedback > 0.0f) timerFeedback -= GetFrameTime();
 
         // ============================================================
@@ -289,7 +334,6 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
             DrawText("Vender Figurinhas",    180, 614, 22, DARKBROWN);
             DrawText("Sair da Padaria",      180, 656, 22, RED);
 
-            // Feedback na tela do menu
             if (timerFeedback > 0.0f) {
                 int larg = MeasureText(msgFeedback, 24);
                 int px   = (GetScreenWidth() - larg) / 2;
@@ -303,7 +347,6 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
                 (Rectangle){0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()},
                 (Vector2){0, 0}, 0.0f, WHITE);
 
-            // Cursor piscando
             char texCursor[18];
             sprintf(texCursor, (int)(GetTime() * 2) % 2 == 0 ? "%s|" : "%s", inputTexto);
             DrawText(texCursor, 342, 600, 26, DARKBROWN);
@@ -348,25 +391,47 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
             DrawText(timerTxt, lpx + 2, 42, 24, BLACK);
             DrawText(timerTxt, lpx,     40, 24, (faltaSeg < 60) ? RED : WHITE);
 
-            // Estado de cada slot
-            int centrosX[5]       = {175, 410, 645, 875, 1105};
+            // Desenha as figurinhas e estado de cada slot
             int centrosTrocada[5] = {165, 400, 635, 865, 1095};
             for (int i = 0; i < 5; i++) {
+
+                int offsets[5] = {-40, -40, -40, -0, 05}; // ajuste os dois ultimos
+                int centroX = (int)btnTrocar[i].x + (int)btnTrocar[i].width / 2 + offsets[i];
+
+                Rectangle destImg = {
+                    centroX - imgLarg / 2,
+                    imgTopoY,
+                    imgLarg,
+                    imgAltu
+                };
+
+
                 if (padaria->slotUsado[i]) {
+                    // Figurinha ja trocada: imagem escurecida + TROCADA
+                    if (texFigurinhas[i].id != 0) {
+                        DrawTexturePro(texFigurinhas[i],
+                            (Rectangle){0, 0, (float)texFigurinhas[i].width, (float)texFigurinhas[i].height},
+                            destImg, (Vector2){0, 0}, 0.0f, Fade(WHITE, 0.3f));
+                    }
                     int larg = MeasureText("TROCADA", 20);
                     DrawText("TROCADA", centrosTrocada[i] - larg / 2, 135, 20, GREEN);
                 } else {
-                    char numFig[8];
-                    sprintf(numFig, "#%d", padaria->FigurinhasNoBalcao[i]);
-                    int larg  = MeasureText(numFig, 20);
-                    int texX  = centrosX[i] - larg / 2 - 15;
-                    int texY  = (int)btnTrocar[i].y + (int)btnTrocar[i].height + 5;
-                    DrawText(numFig, texX + 1, texY + 1, 20, BLACK);
-                    DrawText(numFig, texX,     texY,     20, WHITE);
+                    // Figurinha disponivel: imagem normal
+                    if (texFigurinhas[i].id != 0) {
+                        DrawTexturePro(texFigurinhas[i],
+                            (Rectangle){0, 0, (float)texFigurinhas[i].width, (float)texFigurinhas[i].height},
+                            destImg, (Vector2){0, 0}, 0.0f, WHITE);
+                    } else {
+                        // Fallback: mostra o codigo se imagem nao carregar
+                        int larg = MeasureText(padaria->FigurinhasNoBalcao[i], 18);
+                        DrawText(padaria->FigurinhasNoBalcao[i],
+                            centroX - larg / 2 + 1, imgTopoY + imgAltu / 2 + 1, 18, BLACK);
+                        DrawText(padaria->FigurinhasNoBalcao[i],
+                            centroX - larg / 2,     imgTopoY + imgAltu / 2,     18, WHITE);
+                    }
                 }
             }
 
-            // Feedback de troca
             if (timerFeedback > 0.0f) {
                 int larg = MeasureText(msgFeedback, 24);
                 int px   = (GetScreenWidth() - larg) / 2;
@@ -376,7 +441,7 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
             DrawText("ESC para voltar", 20, 680, 20, RED);
         }
 
-        // ---- STATUS DO JOGADOR (visivel em todas as telas) ----
+        // ---- STATUS DO JOGADOR ----
         char hud[64];
         sprintf(hud, "Dinheiro: R$ %.2f", *saldo_jogador);
         DrawText(hud, 22, 22, 26, BLACK);
@@ -398,10 +463,12 @@ void Entra_Padaria(BancaPadaria *padaria, float *saldo_jogador, int *tem_album, 
 
     } // while
 
-    // Libera texturas ao fechar a janela
+    // Libera texturas
     UnloadTexture(fundo);
     UnloadTexture(fundoBalcao);
     UnloadTexture(fundoComprar);
     UnloadTexture(fundoVender);
     UnloadTexture(fundoTrocar);
+    for (int i = 0; i < 5; i++)
+        if (texFigurinhas[i].id != 0) UnloadTexture(texFigurinhas[i]);
 }
