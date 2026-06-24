@@ -4,7 +4,7 @@
 #include <time.h>
 #include "raylib.h"
 #include "textura.h"
-
+//biblioteca
 
 #define TEMPO_TROCA 600 // atualiza o balcao a cada 10 minutos
 
