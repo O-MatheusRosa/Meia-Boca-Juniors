@@ -209,15 +209,14 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
     for (int i = 0; i < 5; i++) {
         int id_da_carta = indices_sorteados[i];
         
-        // Puxa o código sujo do catálogo
         const char* codigo_sujo = catalogo_geral->figurinhas[id_da_carta].codigo; 
         
-        // Cria uma cópia pra gente poder limpar
+
         char codigo_limpo[15];
         strcpy(codigo_limpo, codigo_sujo);
 
-        // O ASSASSINO DE ESPAÇOS:
-        // Percorre a palavra. Achou espaço, \r ou \n? Corta a string ali mesmo!
+        
+        
         for(int k = 0; k < strlen(codigo_limpo); k++) {
             if(codigo_limpo[k] == ' ' || codigo_limpo[k] == '\r' || codigo_limpo[k] == '\n') {
                 codigo_limpo[k] = '\0';
@@ -225,7 +224,7 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
             }
         }
         
-        // Agora o TextFormat vai usar o código limpo (ex: "AUT5" em vez de "AUT5  ")
+
         const char* caminho = TextFormat("assets/figurinhas/%s.png", codigo_limpo);
         texturas_figurinhas[i] = LoadTexture(caminho);
     }
@@ -236,8 +235,6 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
     ImageColorReplace(&img_pacote, WHITE, BLANK);
     Texture2D textura_pacote = LoadTextureFromImage(img_pacote);
     UnloadImage(img_pacote);
-
-    //Texture2D textura_pacote = LoadTexture("assets/pacotinho.png");
 
     int largura_fig = 180;  
     int altura_fig = 250;
@@ -305,18 +302,15 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
                 int pos_x = margem_x + i * (largura_fig + espacamento);
                 int pos_y = 220; 
 
-                // --- 1. EFEITO HOVER (LEVITAÇÃO) ---
                 float offset_y = 0.0f;
                 Rectangle hitbox_mouse = { pos_x, pos_y, largura_fig, altura_fig };
                 
-                // Se a carta ainda não foi clicada e o mouse tá em cima, ela sobe 15 pixels!
                 if (estado_carta[i] == 0 && CheckCollisionPointRec(mouse, hitbox_mouse)) {
                     offset_y = -15.0f; 
                 }
 
-                // --- 2. MATEMÁTICA DO GIRO 3D ---
                 float largura_atual = largura_fig * escala_x[i];
-                // Isso aqui mantém a carta centralizada enquanto ela encolhe e cresce
+
                 float pos_x_centro = pos_x + (largura_fig - largura_atual) / 2.0f; 
 
                 Rectangle destino = { pos_x_centro, pos_y + offset_y, largura_atual, altura_fig };
@@ -340,7 +334,6 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
                     }
                 }
 
-                // ESTADO 1: ENCOLHENDO AS COSTAS (GIRANDO)
                 else if (estado_carta[i] == 1) { 
                     escala_x[i] -= 6.0f * GetFrameTime(); // 6.0f é a velocidade do giro
                     if (escala_x[i] <= 0.0f) {
@@ -348,28 +341,19 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
                         estado_carta[i] = 2; // Quando sumir, muda o estado pra crescer a frente!
                     }
 
-                    // ==========================================
-                        // A INTEGRAÇÃO COM O CÓDIGO DO SEU AMIGO:
-                        // ==========================================
                         int id_carta_sorteada = indices_sorteados[i];
                         char* nome_tirado = catalogo_geral->figurinhas[id_carta_sorteada].nome_Jogador;
                         
-                        // 1. Procura se você já tem esse cara no seu save
                         int pos_no_album = Procura_Jogador(meu_album, nome_tirado);
                         
                         if (pos_no_album != -1) { // Se já existe no seu álbum...
                             if (meu_album->figurinhas[pos_no_album].colada == 0) {
-                                // Se tinha mas não tava colada (vai que, né?), cola ela!
                                 meu_album->figurinhas[pos_no_album].colada = 1;
                             } else {
-                                // Se já tava colada, vira repetida pro monte!
                                 meu_album->figurinhas[pos_no_album].quantidade_repetidas++;
                             }
                         } else {
-                            // 2. Se é uma figurinha INÉDITA:
-                            // Aqui vocês chamam a função que adiciona um novo item 
-                            // no vetor meu_album->figurinhas (com colada = 1)
-                            // Ex: Adicionar_Nova_No_Album(meu_album, catalogo_geral->figurinhas[id_carta_sorteada]);
+                           
                         }
                     Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
 
@@ -379,29 +363,57 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
 
                     DrawTexturePro(textura_costas, fonte_costas, destino, (Vector2){0,0}, 0.0f, WHITE);
                 }
-                // ESTADO 2: CRESCENDO A FRENTE (REVELANDO)
                 else if (estado_carta[i] == 2) { 
                     escala_x[i] += 6.0f * GetFrameTime();
                     if (escala_x[i] >= 1.0f) {
                         escala_x[i] = 1.0f;
                         estado_carta[i] = 3; 
                         
+                        
                         int id_da_carta = indices_sorteados[i];
+                        const char* codigo_sorteado = catalogo_geral->figurinhas[id_da_carta].codigo;
                         
-                        // Pegamos a quantidade atual que tem no álbum
-                        int qtd = meu_album->quantidade_atual; 
+
+                        int index_encontrado = -1;
+                        for (int j = 0; j < meu_album->quantidade_atual; j++) {
+                            if (strcmp(meu_album->figurinhas[j].codigo, codigo_sorteado) == 0) {
+                                index_encontrado = j;
+                                break;
+                            }
+                        }
                         
-                        // Copiamos TODOS os dados da figurinha do catálogo para o slot vazio do álbum
-                        meu_album->figurinhas[qtd] = catalogo_geral->figurinhas[id_da_carta];
-                        
-                        // Marcamos como colada pro seu amigo desenhar de verde!
-                        meu_album->figurinhas[qtd].colada = 1;
-                        meu_album->figurinhas[qtd].quantidade_repetidas = 0;
-                        
-                        // AVISAMOS O ÁLBUM QUE ELE CRESCEU (Isso tira a tela azul!)
-                        meu_album->quantidade_atual++;
-                        // ==========================================
+
+                        if (index_encontrado != -1) {
+                            if (meu_album->figurinhas[index_encontrado].colada == 0) {
+                                meu_album->figurinhas[index_encontrado].colada = 1;
+                            } else {
+                                meu_album->figurinhas[index_encontrado].quantidade_repetidas++;
+                            }
+                        } 
+
+                        else {
+                            int qtd = meu_album->quantidade_atual;
+                            
+
+                            if (qtd == 0) {
+
+                                meu_album->figurinhas = malloc(1 * sizeof(Dados_Figurinha));
+                            } else {
+
+                                meu_album->figurinhas = realloc(meu_album->figurinhas, (qtd + 1) * sizeof(Dados_Figurinha));
+                            }
+                            
+                            meu_album->figurinhas[qtd] = catalogo_geral->figurinhas[id_da_carta];
+                            meu_album->figurinhas[qtd].colada = 1;
+                            meu_album->figurinhas[qtd].quantidade_repetidas = 0;
+                            
+                            meu_album->quantidade_atual++; // Atualiza o tamanho do álbum
+                        }
+                        // =======================================================
                     }
+                    
+                    Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
+                    DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
                 }
 
                 else if (estado_carta[i] == 3) { 
