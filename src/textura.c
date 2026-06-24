@@ -14,7 +14,6 @@ typedef struct {
 } Relogio;
 
 void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *meu_album, Album *catalogo_geral) {
-    // usar meu_album e catalogo_geral aqui{
 
     // --- Areas do mapa ---
     Vector2 utfpr[] = {
@@ -29,8 +28,6 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
     };
     int pontos_diltu = 6;
 
-
-    
     float saldo_jogador = 20.00; // boni arruma aq dps fznd favor!!!!!!!
 
     //----------------------- estado da tela grafica do album -----------------------
@@ -38,17 +35,14 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
     int paginaAlbum = 0;       //pagina atual do album, lembrada enquanto o jogo roda
     //---------------------------------------------------------------------------------
 
-
     // -------------------------------------------------------
-    // AREA DA PADARIA no mapa (ajuste os pontos conforme
-    // a posicao real da padaria no seu mapinha.png)
+    // AREA DA PADARIA no mapa 
     // -------------------------------------------------------
     Rectangle areaPadaria = { 831, 56, 306, 221 };
 
     // --- Estado do jogador ---
-    
     int   tem_album        = 0;
-    int   pacotes_bolso    = 0; // quantidade de pacotes que o jogador possui
+    int   pacotes_bolso    = 0; 
     int   figurinhas_bolso = 0;
 
     // --- Padaria: inicializada aqui para o timer persistir entre visitas ---
@@ -57,7 +51,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
     padaria.precoAlbum             = 35.00f;
     padaria.precoPacote            = 5.00f;
     padaria.precoComprarFigurinhas = 0.50f;
-    padaria.ultimaAtualizacao      = 0; // forcara atualizacao na primeira entrada
+    padaria.ultimaAtualizacao      = 0; 
 
     // --- Relogio ---
     Relogio tempoJogo;
@@ -65,6 +59,10 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
     tempoJogo.duracaoTurno   = 360.0f;
     tempoJogo.deDia          = true;
     tempoJogo.horaGame       = 6;
+
+    // --- Feedback Visual (Avisos na tela) ---
+    float avisoTimer = 0.0f;
+    char avisoMsg[128] = "";
 
     while (!WindowShouldClose()) {
         UpdateMusicStream(musica);
@@ -83,19 +81,32 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
             tempoJogo.deDia = !tempoJogo.deDia;
         }
 
+        // =======================================================
+        // LÓGICA DO ÁLBUM E PACOTES COM TRAVAS DE COMPRA
+        // =======================================================
 
-     
-
-
-        //tecla A abre ou fecha o album, igual um toggle
+        // Tecla A: Tenta abrir o álbum
         if (IsKeyPressed(KEY_A)) {
-            mostrarAlbum = !mostrarAlbum;
-        }//if abre/fecha album
+            if (tem_album == 1) {
+                mostrarAlbum = !mostrarAlbum;
+            } else {
+                strcpy(avisoMsg, "Voce precisa comprar o Album na Padaria primeiro!");
+                avisoTimer = 3.0f;
+            }
+        }
 
+        // Tecla P: Tenta abrir o pacotinho
         if (IsKeyPressed(KEY_P)) {
-        Animacao_AbrirPacotinho(meu_album, catalogo_geral);
-         }
+            if (pacotes_bolso > 0) {
+                pacotes_bolso--; // Desconta o pacote do inventário
+                Animacao_AbrirPacotinho(meu_album, catalogo_geral); // Roda a sua animação!
+            } else {
+                strcpy(avisoMsg, "Voce nao tem pacotes! Va na Padaria comprar.");
+                avisoTimer = 3.0f;
+            }
+        }
 
+        // Só permite clicar nas construções se o álbum estiver fechado
         if (!mostrarAlbum && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 
             Vector2 mouse = GetMousePosition();
@@ -108,7 +119,6 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
                 Tela_Diltu(musica, &saldo_jogador, tempoJogo.deDia);
             }
 
-            // <<< NOVO: clicar na padaria chama Entra_Padaria >>>
             if (CheckCollisionPointRec(mouse, areaPadaria)) {
                 Entra_Padaria(&padaria, catalogo_geral, &saldo_jogador, &tem_album, &pacotes_bolso, &figurinhas_bolso);
             }
@@ -117,14 +127,14 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
         // --- Desenho do mapa ---
         BeginDrawing();
         ClearBackground(BLACK);
-
         
         if (tempoJogo.deDia == true) {
-            DrawTexture(fundo_dia, 0, 0, WHITE);   // Desenha o mapa claro
+            DrawTexture(fundo_dia, 0, 0, WHITE);   
         } else {
-            DrawTexture(fundo_noite, 0, 0, WHITE); // Desenha o mapa noite
+            DrawTexture(fundo_noite, 0, 0, WHITE); 
         }
 
+        // Relógio HUD
         DrawRectangle(10, 10, 140, 40, Fade(BLACK, 0.7f)); 
         DrawText(TextFormat("%02d:00", tempoJogo.horaGame), 20, 20, 20, YELLOW);
         
@@ -134,22 +144,42 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
             DrawText("NOITE", 90, 20, 20, PURPLE);
         }
 
-        //dica na tela pro jogador saber que pode abrir o album
+        // Dicas dinâmicas na tela
         if (!mostrarAlbum) {
-            DrawRectangle(10, 60, 190, 30, Fade(BLACK, 0.7f));
-            DrawText("[A] Abrir album", 20, 67, 18, WHITE);
+            int pos_y_dica = 60; // Posição Y inicial para desenhar as caixas
+            
+            // Só avisa que dá pra apertar A se o cara tiver o álbum
+            if (tem_album == 1) {
+                DrawRectangle(10, pos_y_dica, 190, 30, Fade(BLACK, 0.7f));
+                DrawText("[A] Abrir album", 20, pos_y_dica + 7, 18, WHITE);
+                pos_y_dica += 40; // Desce a posição para a próxima caixa não sobrepor
+            }
+            
+            // Só avisa que dá pra apertar P se tiver pacote
+            if (pacotes_bolso > 0) {
+                DrawRectangle(10, pos_y_dica, 220, 30, Fade(BLACK, 0.7f));
+                DrawText(TextFormat("[P] Abrir pacote (x%d)", pacotes_bolso), 20, pos_y_dica + 7, 18, WHITE);
+            }
         }
 
-        //se o jogador apertou A, desenha o album por cima de tudo
+        // Desenha mensagens de erro/aviso no meio da tela (Some sozinho depois de 3 seg)
+        if (avisoTimer > 0.0f) {
+            avisoTimer -= GetFrameTime();
+            int largTexto = MeasureText(avisoMsg, 20);
+            int posX = (1280 - largTexto) / 2; // Centraliza
+            
+            DrawRectangle(posX - 20, 600, largTexto + 40, 40, Fade(RED, 0.8f));
+            DrawText(avisoMsg, posX, 610, 20, WHITE);
+        }
+
+        // Desenha o álbum por cima de tudo se ele estiver aberto
         if (mostrarAlbum) {
             Desenha_Album(meu_album, &paginaAlbum);
-        }//if mostra album
+        }
 
         EndDrawing();
-
     } // while
 }
-
 // ============================================================
 // TELA HOME
 // ============================================================
