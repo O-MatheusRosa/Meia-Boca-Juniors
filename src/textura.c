@@ -118,25 +118,32 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
         BeginDrawing();
         ClearBackground(BLACK);
 
-        if (tempoJogo.deDia) {
-            DrawTexture(fundo_dia,   0, 0, WHITE);
+        
+        if (tempoJogo.deDia == true) {
+            DrawTexture(fundo_dia, 0, 0, WHITE);   // Desenha o mapa claro
         } else {
-            DrawTexture(fundo_noite, 0, 0, WHITE);
+            DrawTexture(fundo_noite, 0, 0, WHITE); // Desenha o mapa noite
         }
 
-        // HUD: hora
-        DrawRectangle(10, 10, 140, 40, Fade(BLACK, 0.7f));
+        DrawRectangle(10, 10, 140, 40, Fade(BLACK, 0.7f)); 
         DrawText(TextFormat("%02d:00", tempoJogo.horaGame), 20, 20, 20, YELLOW);
-        DrawText(tempoJogo.deDia ? "DIA" : "NOITE", 90, 20, 20,
-                 tempoJogo.deDia ? SKYBLUE : PURPLE);
+        
+        if (tempoJogo.deDia == true) {
+            DrawText("DIA", 90, 20, 20, SKYBLUE);
+        } else {
+            DrawText("NOITE", 90, 20, 20, PURPLE);
+        }
 
-        // HUD: dinheiro, pacotes e figurinhas no mapa
-        char hud[64];
-        sprintf(hud, "R$ %.2f", saldo_jogador);
-        DrawText(hud, 12, 52, 20, BLACK);
-        DrawText(hud, 10, 50, 20, YELLOW);
+        //dica na tela pro jogador saber que pode abrir o album
+        if (!mostrarAlbum) {
+            DrawRectangle(10, 60, 190, 30, Fade(BLACK, 0.7f));
+            DrawText("[A] Abrir album", 20, 67, 18, WHITE);
+        }
 
-
+        //se o jogador apertou A, desenha o album por cima de tudo
+        if (mostrarAlbum) {
+            Desenha_Album(meu_album, &paginaAlbum);
+        }//if mostra album
 
         EndDrawing();
 
