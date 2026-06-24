@@ -347,6 +347,30 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
                         escala_x[i] = 0.0f;
                         estado_carta[i] = 2; // Quando sumir, muda o estado pra crescer a frente!
                     }
+
+                    // ==========================================
+                        // A INTEGRAÇÃO COM O CÓDIGO DO SEU AMIGO:
+                        // ==========================================
+                        int id_carta_sorteada = indices_sorteados[i];
+                        char* nome_tirado = catalogo_geral->figurinhas[id_carta_sorteada].nome_Jogador;
+                        
+                        // 1. Procura se você já tem esse cara no seu save
+                        int pos_no_album = Procura_Jogador(meu_album, nome_tirado);
+                        
+                        if (pos_no_album != -1) { // Se já existe no seu álbum...
+                            if (meu_album->figurinhas[pos_no_album].colada == 0) {
+                                // Se tinha mas não tava colada (vai que, né?), cola ela!
+                                meu_album->figurinhas[pos_no_album].colada = 1;
+                            } else {
+                                // Se já tava colada, vira repetida pro monte!
+                                meu_album->figurinhas[pos_no_album].quantidade_repetidas++;
+                            }
+                        } else {
+                            // 2. Se é uma figurinha INÉDITA:
+                            // Aqui vocês chamam a função que adiciona um novo item 
+                            // no vetor meu_album->figurinhas (com colada = 1)
+                            // Ex: Adicionar_Nova_No_Album(meu_album, catalogo_geral->figurinhas[id_carta_sorteada]);
+                        }
                     Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
 
                     // Sombra da carta
@@ -360,12 +384,24 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
                     escala_x[i] += 6.0f * GetFrameTime();
                     if (escala_x[i] >= 1.0f) {
                         escala_x[i] = 1.0f;
-                        estado_carta[i] = 3; // Terminou de girar, trava no estado final!
+                        estado_carta[i] = 3; 
                         
-                        // === AQUI SEU AMIGO SALVA NO ALBUM ===
+                        int id_da_carta = indices_sorteados[i];
+                        
+                        // Pegamos a quantidade atual que tem no álbum
+                        int qtd = meu_album->quantidade_atual; 
+                        
+                        // Copiamos TODOS os dados da figurinha do catálogo para o slot vazio do álbum
+                        meu_album->figurinhas[qtd] = catalogo_geral->figurinhas[id_da_carta];
+                        
+                        // Marcamos como colada pro seu amigo desenhar de verde!
+                        meu_album->figurinhas[qtd].colada = 1;
+                        meu_album->figurinhas[qtd].quantidade_repetidas = 0;
+                        
+                        // AVISAMOS O ÁLBUM QUE ELE CRESCEU (Isso tira a tela azul!)
+                        meu_album->quantidade_atual++;
+                        // ==========================================
                     }
-                    Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
-                    DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
                 }
 
                 else if (estado_carta[i] == 3) { 

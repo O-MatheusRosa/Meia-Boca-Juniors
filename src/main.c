@@ -128,7 +128,11 @@ if(acao == 1){
     printf("\nFechou a janela, saindo.....\n");
 }
 
-Animacao_AbrirPacotinho(&meu_album, &catalago_geral);
+
+
+Animacao_AbrirPacotinho(&meu_album, &catalago_geral);//apagar e jogar na funcao abre pacotin do vinicius
+
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
