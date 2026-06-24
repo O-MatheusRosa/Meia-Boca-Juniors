@@ -9,7 +9,7 @@ typedef struct{
    char codigo[15]; //codigo da figurinha
    char nome_Jogador[60]; //titulo
    char secao[60];  //categoria do jogador ou pg, ainda tem q ver
-   char grupo[60];  //grupo q o jogador esta, tipo o Brasil é gp B,logo o jogador tbm
+   char grupo[60];  //grupo q o jogador esta, tipo o Brasil ï¿½ gp B,logo o jogador tbm
    char raridade[30];   //tipo
 
    //controle de fluxo das fig
@@ -36,7 +36,15 @@ int Salva_Bin(Album *album, const char *nome_arquivo);//carrega da ram pro hd, #
 
 int Carrega_Bin(Album * album, const char *nome_arquivo);//carrega do hd pra ram
 
-int Carrega_Csv(Album *album, const char *nome_arquivo); //chama da função referente ao carregamento do csv
+int Carrega_Csv(Album *album, const char *nome_arquivo); //chama da funï¿½ï¿½o referente ao carregamento do csv
+
+
+//###########################################################//
+//Funcao pronta pra somar um novo arquivo de figurinhas (mesmo padrao do
+//csv: codigo,titulo,secao,grupo,tipo) ao catalogo que ja existe.
+//Ex: Carrega_Novas_Figurinhas(&catalago_geral, "figurinhas_update.csv");
+//###########################################################//
+int Carrega_Novas_Figurinhas(Album *catalogo, const char *caminho_arquivo);
 
 void Mostra_Album(Album *album);//preciso nem explicar ne
 
@@ -45,6 +53,7 @@ int Procura_Jogador(Album *album,char *nome_buscado); // procura o jogador, ##ca
 int Ordena_lista_Bin(const void *a, const void *b); 
 
 void Sanitiza_Nome(Album *album);
+void Sanitiza_Secao(Album *album);
 
 void Abre_Pacotinho(Album *catalogo, Album *meu_album);
 
@@ -53,4 +62,10 @@ void Alterar_Figurinha(Album *meu_album);
 void Exclui_Figurinha(Album *meu_album);
 
 void Adiciona_Figurinha(Album *catalogo);
+
+//###########################################################//
+//Tela grafica do album (raylib) - aberta com a tecla A no mapa
+//###########################################################//
+void Desenha_Album(Album *meu_album, int *pagina);
+
 #endif

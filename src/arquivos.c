@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "figurinha.h"
+#include "utilitarios.h"
 
 //###########################################################//
 //Funcao que abre o arquivo no hd, no caso a leitura apenas por enqnt
@@ -23,7 +24,7 @@ int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apena
     }//caso de erro ao abrir o arquivo
 
     fgets(leitura_linha, sizeof(leitura_linha),arquivo);
-    //aqui ele pega o cabeçalho, pq ele n me ajuda muito
+    //aqui ele pega o cabeÃ§alho, pq ele n me ajuda muito
 
     while (fgets(leitura_linha, sizeof(leitura_linha), arquivo) != NULL) { 
         
@@ -70,6 +71,36 @@ int Carrega_Csv(Album *album, const char *nome_arquivo){ //const char, pra apena
     return 1;
 }//final da funcao
 
+
+//###########################################################//
+//Funcao PRONTA pra receber um novo arquivo de figurinhas, no MESMO padrao
+//do figurinhas2026.csv (codigo,titulo,secao,grupo,tipo).
+//
+//Serve pra quando sair uma atualizacao (ex: a "Update Edition" do album,
+//com novas selecoes/figurinhas) ou qualquer outro arquivo extra que
+//alguem queira somar ao catalogo geral do jogo.
+//
+//Ela so soma as figurinhas novas no catalogo que ja existe (nao
+//apaga as que ja tinham sido carregadas antes), e ja sanitiza os nomes.
+//
+//Exemplo de uso (em qualquer lugar que tenha o catalago_geral):
+//      Carrega_Novas_Figurinhas(&catalago_geral, "figurinhas_update.csv");
+//###########################################################//
+int Carrega_Novas_Figurinhas(Album *catalogo, const char *caminho_arquivo){
+
+    int sucesso = Carrega_Csv(catalogo, caminho_arquivo);
+
+    if (sucesso){
+        Sanitiza_Nome(catalogo);
+        printf(VERDE "\n>> Novo arquivo de figurinhas carregado com sucesso: %s\n" RESET, caminho_arquivo);
+        printf(">> Catalogo agora tem %d figurinhas cadastradas no total.\n", catalogo->quantidade_atual);
+    }else{
+        printf(VERMELHO "\n>> [ERRO] Nao foi possivel carregar o arquivo: %s\n" RESET, caminho_arquivo);
+        printf(VERMELHO ">> Confira se o arquivo existe e segue o padrao: codigo,titulo,secao,grupo,tipo\n" RESET);
+    }//else
+
+    return sucesso;
+}//funcao
 //###########################################################//
 //Funcao que vai da memoria ram pro arquivo em binario
 //###########################################################//
@@ -107,7 +138,7 @@ int Carrega_Bin(Album * album, const char *nome_arquivo){
     }//caso nao consiga carregar do hd pra ram
 
     int qnt_lida = 0;
-    //leitura do cabeçalho, jogo ele fora
+    //leitura do cabeÃ§alho, jogo ele fora
     fread(&qnt_lida, sizeof(int), 1, arquivo);
 
     if (qnt_lida > 0){

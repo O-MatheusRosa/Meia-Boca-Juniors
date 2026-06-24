@@ -4,6 +4,12 @@
 #include <time.h>
 #include "raylib.h"
 #include "../include/textura.h" // Contém a definição da struct 'Questao'
+#include <strings.h>
+#ifndef _WIN32
+    #include <strings.h> 
+    #define stricmp strcasecmp 
+#endif
+
 
 // Define a quantidade máxima de perguntas que o banco de dados do jogo pode suportar
 #define TOTAL_BANCO 20
@@ -70,11 +76,11 @@ void DrawTextWrapped(const char *text, int x, int y, int maxWidth, int fontSize,
         if (buffer[posBuffer] == ' ') posBuffer++;
 
         // Tenta encaixar a palavra na linha atual
-        char tentativa[1024];
+        char tentativa[3000];
         if (linhaAtual[0] == '\0') {
             snprintf(tentativa, sizeof(tentativa), "%s", palavra);
         } else {
-            snprintf(tentativa, sizeof(tentativa), "%s %s", linhaAtual, palavra);
+            snprintf(tentativa, sizeof(tentativa), "%.399s %.297s", linhaAtual, palavra);
         }
 
         int largura = MeasureText(tentativa, fontSize);
@@ -97,7 +103,7 @@ void DrawTextWrapped(const char *text, int x, int y, int maxWidth, int fontSize,
 // Sorteia se o acerto de 2 questões vai render dinheiro ou se será "Trabalho Voluntário"
 float finalizar_turno(void) {
     int rng = (rand() % 100) + 1; // Gera número de 1 a 100
-    int chance_voluntario = 40;   // 40% de chance de trabalhar de graça
+    int chance_voluntario = 10;   // 10% de chance de trabalhar de graça
 
     if (rng <= chance_voluntario) {
         return 0.00f; // Azar: voluntário

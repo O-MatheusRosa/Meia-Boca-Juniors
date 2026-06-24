@@ -61,6 +61,45 @@ int main(void){
             
 int acao = Tela_Home(fundo,musica_menu);
 
+//-------------------------------------incializa o album---------------------------------------------------
+Album meu_album;
+meu_album.figurinhas = NULL;
+meu_album.quantidade_atual = 0;
+meu_album.quantidade_maxima = 0;
+
+Album catalago_geral;
+catalago_geral.figurinhas = NULL;
+catalago_geral.quantidade_atual = 0;
+catalago_geral.quantidade_maxima = 0;
+
+inicializa_Album(&meu_album);
+inicializa_Album(&catalago_geral);
+
+Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
+Sanitiza_Nome(&catalago_geral);
+    Sanitiza_Secao(&catalago_geral);
+//--------------------------------------------------------------------------------------------------------
+
+                                    Limpar_Tela();
+     
+//-----------------------------------carrega o album--------------------------------------------------------
+if (Carrega_Bin(&meu_album,"save.dat")){
+    printf(VERDE "\n\n>> Arquivo encontrado! Album carregado do HD.\n" RESET);
+}else{
+    printf("\n\n>> Primeiro uso. Album zerado\n\n");
+}//if else
+//carrega o arq bin do hd, e se nao tiver, cria um
+Sanitiza_Nome(&meu_album);
+Sanitiza_Secao(&meu_album);
+//-----------------------------------------------------------------------------------------------------------
+
+srand(time(NULL));
+
+//-----------------------------------------ordena��o em ordem alfabetica-------------------------------------
+qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Ordena_lista_Bin);
+printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
+//-----------------------------------------------------------------------------------------------------------
+
 if(acao == 1){
 
     Image imagem_dia = LoadImage("assets/mapinha.png"); 
@@ -79,7 +118,7 @@ if(acao == 1){
     PlayMusicStream(musica_cidade);
     SetMusicVolume(musica_cidade,0.2f);
 
-    Tela_Jogo(fundo_dia, fundo_noite, musica_cidade);
+    Tela_Jogo(fundo_dia, fundo_noite, musica_cidade, &meu_album, &catalago_geral);
 
     UnloadTexture(fundo_dia);
     UnloadTexture(fundo_noite);
@@ -89,46 +128,9 @@ if(acao == 1){
     printf("\nFechou a janela, saindo.....\n");
 }
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-//-------------------------------------incializa o album---------------------------------------------------
-Album meu_album;
-meu_album.figurinhas = NULL;
-meu_album.quantidade_atual = 0;
-meu_album.quantidade_maxima = 0;
-
-Album catalago_geral;
-catalago_geral.figurinhas = NULL;
-catalago_geral.quantidade_atual = 0;
-catalago_geral.quantidade_maxima = 0;
-
-inicializa_Album(&meu_album);
-inicializa_Album(&catalago_geral);
-
-Carrega_Csv(&catalago_geral,"figurinhas2026.csv");
-Sanitiza_Nome(&catalago_geral);
-//--------------------------------------------------------------------------------------------------------
-
-                                    Limpar_Tela();
-     
-//-----------------------------------carrega o album--------------------------------------------------------
-if (Carrega_Bin(&meu_album,"save.dat")){
-    printf(VERDE "\n\n>> Arquivo encontrado! Album carregado do HD.\n" RESET);
-}else{
-    printf("\n\n>> Primeiro uso. Album zerado\n\n");
-}//if else
-//carrega o arq bin do hd, e se nao tiver, cria um
-Sanitiza_Nome(&meu_album);
-//-----------------------------------------------------------------------------------------------------------
-
-srand(time(NULL));
 
 //------------------------------------------menu-------------------------------------------------------------
 int op;
-
-//-----------------------------------------ordena��o em ordem alfabetica-------------------------------------
-qsort(meu_album.figurinhas,meu_album.quantidade_atual,sizeof(Dados_Figurinha),Ordena_lista_Bin);
-printf("\n\n>> Sistema: Banco de dados organizado em ordem alfabetica!\n\n");
-//-----------------------------------------------------------------------------------------------------------
 
 /*
 do{
