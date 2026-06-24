@@ -1,309 +1,154 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "raylib.h"
 #include "../include/textura.h"
 
+
 typedef struct {
     float tempoAcumulado;
-    float duracaoTurno;  
-    bool deDia; 
-    int horaGame;
+    float duracaoTurno;
+    bool  deDia;
+    int   horaGame;
 } Relogio;
 
-void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *meu_album, Album *catalogo_geral){
+void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *meu_album, Album *catalogo_geral) {
+    // usar meu_album e catalogo_geral aqui{
 
-
-    // 1. ÃREA DA UTFPR (Canto Inferior Direito)
+    // --- Areas do mapa ---
     Vector2 utfpr[] = {
-
-        { 780, 430 },  // Ponto 1: Quina superior esquerda
-        { 1280, 430 }, // Ponto 2: Vai reto acompanhando a rua
-        { 1280, 720 }, // Ponto 3: Desce atÃ© o chÃ£o direito
-        { 710, 720 },  // Ponto 4: Volta pelo chÃ£o atÃ© a rua
-        { 710, 500 },  // Ponto 5: Sobe reto acompanhando a calÃ§ada
-        { 780, 430 }   // Ponto 6: Faz a diagonal da rotatÃ³ria e fecha
+        { 780, 430 }, { 1280, 430 }, { 1280, 720 },
+        { 710, 720 }, { 710, 500  }, { 780, 430  }
     };
     int quantidade_pontos = 6;
 
-    // 2. ÃREA DO DILTO (Canto Inferior Esquerdo)
     Vector2 diltu[] = {
-        
-        { 0, 430 },    // Ponto 1: Borda esquerda da tela
-        { 500, 430 },  // Ponto 2: Vai reto atÃ© a curvinha
-        { 570, 500 },  // Ponto 3: Desce a diagonal da calÃ§ada
-        { 570, 720 },  // Ponto 4: Desce reto acompanhando a rua
-        { 0, 720 },    // Ponto 5: Volta pelo chÃ£o atÃ© a borda
-        { 0, 430 }     // Ponto 6: Sobe pela borda e fecha
+        { 0, 430 }, { 500, 430 }, { 570, 500 },
+        { 570, 720}, { 0, 720  }, { 0, 430   }
     };
     int pontos_diltu = 6;
-             // ComeÃ§a as 6h da manhÃ£
 
-    float saldo_jogador = 20.00; // boni arruma aq dps fznd favor!!!!!!!
 
-    //----------------------- estado da tela grafica do album -----------------------
-    bool mostrarAlbum = false; //comeca fechado, abre/fecha com a tecla A
-    int paginaAlbum = 0;       //pagina atual do album, lembrada enquanto o jogo roda
-    //---------------------------------------------------------------------------------
+    // -------------------------------------------------------
+    // AREA DA PADARIA no mapa (ajuste os pontos conforme
+    // a posicao real da padaria no seu mapinha.png)
+    // -------------------------------------------------------
+    Rectangle areaPadaria = { 831, 56, 306, 221 };
 
+    // --- Estado do jogador ---
+    float saldo_jogador    = 20.00f; // boni arruma aq dps fznd favor!!!!!!!
+    int   tem_album        = 0;
+    int   pacotes_bolso    = 0; // quantidade de pacotes que o jogador possui
+    int   figurinhas_bolso = 0;
+
+    // --- Padaria: inicializada aqui para o timer persistir entre visitas ---
+    BancaPadaria padaria;
+    padaria.qntAlbum               = 5;
+    padaria.precoAlbum             = 35.00f;
+    padaria.precoPacote            = 5.00f;
+    padaria.precoComprarFigurinhas = 0.50f;
+    padaria.ultimaAtualizacao      = 0; // forcara atualizacao na primeira entrada
+
+    // --- Relogio ---
     Relogio tempoJogo;
     tempoJogo.tempoAcumulado = 0.0f;
-    tempoJogo.duracaoTurno = 360.0f; // 6 minutos para virar o turno
-    tempoJogo.deDia = true;          // Comeca de dia
-    tempoJogo.horaGame = 6;          // Comeca 6 manha
+    tempoJogo.duracaoTurno   = 360.0f;
+    tempoJogo.deDia          = true;
+    tempoJogo.horaGame       = 6;
 
     while (!WindowShouldClose()) {
         UpdateMusicStream(musica);
 
+        // Atualiza relogio
         tempoJogo.tempoAcumulado += GetFrameTime();
         int horasPassadas = (int)(tempoJogo.tempoAcumulado / (tempoJogo.duracaoTurno / 12.0f));
-        
-        if (tempoJogo.deDia == true) {
-            tempoJogo.horaGame = 6 + horasPassadas; 
+        if (tempoJogo.deDia) {
+            tempoJogo.horaGame = 6 + horasPassadas;
         } else {
-            tempoJogo.horaGame = 18 + horasPassadas; 
-            if (tempoJogo.horaGame >= 24) {
-                tempoJogo.horaGame -= 24; 
-            }
+            tempoJogo.horaGame = 18 + horasPassadas;
+            if (tempoJogo.horaGame >= 24) tempoJogo.horaGame -= 24;
         }
-
         if (tempoJogo.tempoAcumulado >= tempoJogo.duracaoTurno) {
-            tempoJogo.tempoAcumulado = 0.0f; 
-            
-            // Inverte o turno
-            if (tempoJogo.deDia == true) {
-                tempoJogo.deDia = false;
-            } else {
-                tempoJogo.deDia = true;
-            }
+            tempoJogo.tempoAcumulado = 0.0f;
+            tempoJogo.deDia = !tempoJogo.deDia;
         }
 
-
-
-        //tecla A abre ou fecha o album, igual um toggle
-        if (IsKeyPressed(KEY_A)) {
-            mostrarAlbum = !mostrarAlbum;
-        }//if abre/fecha album
-
-        if (IsKeyPressed(KEY_P)) {
-        Teste_AbrirPacotinho(meu_album, catalogo_geral);
-         }
-
-        if (!mostrarAlbum && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        // --- Cliques no mapa ---
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             Vector2 mouse = GetMousePosition();
 
-
             if (CheckCollisionPointPoly(mouse, utfpr, quantidade_pontos)) {
-               ExecutarModuloMonitoria(&saldo_jogador, tempoJogo.deDia);//boni
+                ExecutarModuloMonitoria(&saldo_jogador, tempoJogo.deDia);
             }
 
             if (CheckCollisionPointPoly(mouse, diltu, pontos_diltu)) {
-               Tela_Diltu(musica, &saldo_jogador, tempoJogo.deDia);
+                Tela_Diltu(musica, &saldo_jogador, tempoJogo.deDia);
+            }
+
+            // <<< NOVO: clicar na padaria chama Entra_Padaria >>>
+            if (CheckCollisionPointRec(mouse, areaPadaria)) {
+                Entra_Padaria(&padaria, &saldo_jogador, &tem_album, &pacotes_bolso, &figurinhas_bolso);
             }
         }
 
+        // --- Desenho do mapa ---
         BeginDrawing();
         ClearBackground(BLACK);
 
-        if (tempoJogo.deDia == true) {
-            DrawTexture(fundo_dia, 0, 0, WHITE);   // Desenha o mapa claro
+        if (tempoJogo.deDia) {
+            DrawTexture(fundo_dia,   0, 0, WHITE);
         } else {
-            DrawTexture(fundo_noite, 0, 0, WHITE); // Desenha o mapa noite
+            DrawTexture(fundo_noite, 0, 0, WHITE);
         }
 
-        DrawRectangle(10, 10, 140, 40, Fade(BLACK, 0.7f)); 
+        // HUD: hora
+        DrawRectangle(10, 10, 140, 40, Fade(BLACK, 0.7f));
         DrawText(TextFormat("%02d:00", tempoJogo.horaGame), 20, 20, 20, YELLOW);
-        
-        if (tempoJogo.deDia == true) {
-            DrawText("DIA", 90, 20, 20, SKYBLUE);
-        } else {
-            DrawText("NOITE", 90, 20, 20, PURPLE);
-        }
+        DrawText(tempoJogo.deDia ? "DIA" : "NOITE", 90, 20, 20,
+                 tempoJogo.deDia ? SKYBLUE : PURPLE);
 
-        //dica na tela pro jogador saber que pode abrir o album
-        if (!mostrarAlbum) {
-            DrawRectangle(10, 60, 190, 30, Fade(BLACK, 0.7f));
-            DrawText("[A] Abrir album", 20, 67, 18, WHITE);
-        }
+        // HUD: dinheiro, pacotes e figurinhas no mapa
+        char hud[64];
+        sprintf(hud, "R$ %.2f", saldo_jogador);
+        DrawText(hud, 12, 52, 20, BLACK);
+        DrawText(hud, 10, 50, 20, YELLOW);
 
-        //se o jogador apertou A, desenha o album por cima de tudo
-        if (mostrarAlbum) {
-            Desenha_Album(meu_album, &paginaAlbum);
-        }//if mostra album
+
 
         EndDrawing();
-    }
+
+    } // while
 }
 
-int Tela_Home(Texture2D fundo, Music musica_menu) { 
+// ============================================================
+// TELA HOME
+// ============================================================
+int Tela_Home(Texture2D fundo, Music musica_menu) {
+    int  piscarJogar  = 0;
+    bool mostrarJogar = true;
+    Font fontePixel   = LoadFontEx("assets/minecraft.ttf", 60, 0, 250);
 
-    int piscarJogar = 0;
-    bool mostrarJogar = true; 
-
-    Font fontePixel = LoadFontEx("assets/minecraft.ttf", 60, 0, 250);
-    
     while (!WindowShouldClose()) {
-        
         UpdateMusicStream(musica_menu);
-
         piscarJogar++;
         if (piscarJogar > 30) {
             mostrarJogar = !mostrarJogar;
-            piscarJogar = 0;
+            piscarJogar  = 0;
         }
-        
+
         if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-            UnloadFont(fontePixel); 
+            UnloadFont(fontePixel);
             return 1;
         }
 
-       
         BeginDrawing();
         ClearBackground(BLACK);
-
         DrawTexture(fundo, 0, 0, WHITE);
-
         if (mostrarJogar) {
-            DrawTextEx(fontePixel, " JOGAR\n[ENTER]", (Vector2){ 580, 650 }, 30, 2, YELLOW);
-        }//final do if else
-
+            DrawTextEx(fontePixel, " JOGAR\n[ENTER]", (Vector2){580, 650}, 30, 2, YELLOW);
+        }
         EndDrawing();
-    }//while de desenho
+    }
 
     UnloadFont(fontePixel);
-    return 0; 
-}//fnc
-
-void Teste_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) { 
-    int fase_pacote = 0; 
-    
-    // --- 1. SORTEIO DAS 5 CARTAS (De 0 a 980) ---
-    int indices_sorteados[5];
-    
-    for (int i = 0; i < 5; i++) {
-        int numero_sorteado;
-        bool repetido;
-        
-        do {
-            repetido = false;
-            numero_sorteado = rand() % 981; 
-            
-            for (int j = 0; j < i; j++) {
-                if (indices_sorteados[j] == numero_sorteado) {
-                    repetido = true;
-                    break; 
-                }
-            }
-        } while (repetido == true);
-        
-        indices_sorteados[i] = numero_sorteado;
-    }
-
-    Texture2D texturas_figurinhas[5];
-    bool carta_virada[5] = {false, false, false, false, false}; 
-
-    // --- 2. CARREGANDO AS IMAGENS E MATANDO OS ESPAÇOS ---
-    for (int i = 0; i < 5; i++) {
-        int id_da_carta = indices_sorteados[i];
-        
-        // Puxa o código sujo do catálogo
-        const char* codigo_sujo = catalogo_geral->figurinhas[id_da_carta].codigo; 
-        
-        // Cria uma cópia pra gente poder limpar
-        char codigo_limpo[15];
-        strcpy(codigo_limpo, codigo_sujo);
-
-        // O ASSASSINO DE ESPAÇOS:
-        // Percorre a palavra. Achou espaço, \r ou \n? Corta a string ali mesmo!
-        for(int k = 0; k < strlen(codigo_limpo); k++) {
-            if(codigo_limpo[k] == ' ' || codigo_limpo[k] == '\r' || codigo_limpo[k] == '\n') {
-                codigo_limpo[k] = '\0';
-                break; 
-            }
-        }
-        
-        // Agora o TextFormat vai usar o código limpo (ex: "AUT5" em vez de "AUT5  ")
-        const char* caminho = TextFormat("assets/figurinhas/%s.png", codigo_limpo);
-        texturas_figurinhas[i] = LoadTexture(caminho);
-    }
-
-    Texture2D textura_costas = LoadTexture("assets/figurinhas/costas.png");
-
-    int largura_fig = 180;  
-    int altura_fig = 250;
-    int espacamento = 40;
-    int margem_x = (1280 - (5 * largura_fig + 4 * espacamento)) / 2; 
-
-    Rectangle hitbox_pacote = { 540, 210, 200, 300 }; 
-
-    while (!WindowShouldClose()) {
-        Vector2 mouse = GetMousePosition();
-        
-        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER)) break;
-
-        BeginDrawing();
-        ClearBackground(DARKBLUE);
-
-        if (fase_pacote == 0) {
-            DrawText("CLIQUE NO PACOTE PARA ABRIR!", 320, 120, 40, WHITE);
-            
-            DrawRectangleRec(hitbox_pacote, GOLD);
-            DrawRectangleLinesEx(hitbox_pacote, 5, ORANGE);
-            DrawText("PACOTE", 580, 340, 25, BLACK);
-
-            if (CheckCollisionPointRec(mouse, hitbox_pacote) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                fase_pacote = 1; 
-            }
-        }
-        else if (fase_pacote == 1) {
-            
-            DrawText("CLIQUE NAS CARTAS PARA REVELAR!", 310, 80, 40, GOLD);
-
-            int qtd_reveladas = 0; 
-
-            for (int i = 0; i < 5; i++) {
-                int pos_x = margem_x + i * (largura_fig + espacamento);
-                int pos_y = 220; 
-
-                Rectangle destino = { pos_x, pos_y, largura_fig, altura_fig };
-
-                if (carta_virada[i] == false) {
-                    Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
-                    DrawTexturePro(textura_costas, fonte_costas, destino, (Vector2){0,0}, 0.0f, WHITE);
-                    
-                    if (CheckCollisionPointRec(mouse, destino)) {
-                        DrawRectangleLinesEx(destino, 4, WHITE);
-                    }
-
-                    if (CheckCollisionPointRec(mouse, destino) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                        carta_virada[i] = true;
-                        
-                        // DEIXEI VAZIO POR ENQUANTO (Leia o aviso importante abaixo!)
-                    }
-                } 
-                else {
-                    Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
-                    DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
-                    
-                    int id_da_carta = indices_sorteados[i];
-                    
-                    // CORREÇÃO 2: Aqui também tem que ler o nome do catalogo_geral!
-                    DrawText(catalogo_geral->figurinhas[id_da_carta].codigo, pos_x + 50, pos_y + altura_fig + 20, 20, LIGHTGRAY);
-                    
-                    qtd_reveladas++; 
-                }
-            }
-            
-            if (qtd_reveladas == 5) {
-                DrawText("Aperte ENTER ou ESC para fechar.", 440, 600, 20, GRAY);
-            }
-        }
-
-        EndDrawing();
-    }
-
-    for (int i = 0; i < 5; i++) {
-        UnloadTexture(texturas_figurinhas[i]);
-    }
-    UnloadTexture(textura_costas); 
+    return 0;
 }
