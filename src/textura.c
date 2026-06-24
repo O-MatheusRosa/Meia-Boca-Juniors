@@ -46,7 +46,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
     Rectangle areaPadaria = { 831, 56, 306, 221 };
 
     // --- Estado do jogador ---
-    float saldo_jogador    = 20.00f; // boni arruma aq dps fznd favor!!!!!!!
+    
     int   tem_album        = 0;
     int   pacotes_bolso    = 0; // quantidade de pacotes que o jogador possui
     int   figurinhas_bolso = 0;
