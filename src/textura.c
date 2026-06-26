@@ -28,46 +28,36 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
     };
     int pontos_diltu = 6;
 
-    float saldo_jogador = 20.00; // boni arruma aq dps fznd favor!!!!!!!
+    float saldo_jogador = 30.00;
 
-    //----------------------- estado da tela grafica do album -----------------------
-    bool mostrarAlbum = false; //comeca fechado, abre/fecha com a tecla A
-    int paginaAlbum = 0;       //pagina atual do album, lembrada enquanto o jogo roda
-    //---------------------------------------------------------------------------------
+    bool mostrarAlbum = false;
+    int paginaAlbum = 0;
 
-    // -------------------------------------------------------
-    // AREA DA PADARIA no mapa 
-    // -------------------------------------------------------
     Rectangle areaPadaria = { 831, 56, 306, 221 };
 
-    // --- Estado do jogador ---
     int   tem_album        = 0;
-    int   pacotes_bolso    = 0; 
+    int   pacotes_bolso    = 0;
     int   figurinhas_bolso = 0;
 
-    // --- Padaria: inicializada aqui para o timer persistir entre visitas ---
     BancaPadaria padaria;
     padaria.qntAlbum               = 5;
     padaria.precoAlbum             = 35.00f;
     padaria.precoPacote            = 5.00f;
     padaria.precoComprarFigurinhas = 0.50f;
-    padaria.ultimaAtualizacao      = 0; 
+    padaria.ultimaAtualizacao      = 0;
 
-    // --- Relogio ---
     Relogio tempoJogo;
     tempoJogo.tempoAcumulado = 0.0f;
     tempoJogo.duracaoTurno   = 360.0f;
     tempoJogo.deDia          = true;
     tempoJogo.horaGame       = 6;
 
-    // --- Feedback Visual (Avisos na tela) ---
     float avisoTimer = 0.0f;
     char avisoMsg[128] = "";
 
     while (!WindowShouldClose()) {
         UpdateMusicStream(musica);
 
-        // Atualiza relogio
         tempoJogo.tempoAcumulado += GetFrameTime();
         int horasPassadas = (int)(tempoJogo.tempoAcumulado / (tempoJogo.duracaoTurno / 12.0f));
         if (tempoJogo.deDia) {
@@ -81,11 +71,6 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
             tempoJogo.deDia = !tempoJogo.deDia;
         }
 
-        // =======================================================
-        // LÓGICA DO ÁLBUM E PACOTES COM TRAVAS DE COMPRA
-        // =======================================================
-
-        // Tecla A: Tenta abrir o álbum
         if (IsKeyPressed(KEY_A)) {
             if (tem_album == 1) {
                 mostrarAlbum = !mostrarAlbum;
@@ -95,20 +80,17 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
             }
         }
 
-        // Tecla P: Tenta abrir o pacotinho
         if (IsKeyPressed(KEY_P)) {
             if (pacotes_bolso > 0) {
-                pacotes_bolso--; // Desconta o pacote do inventário
-                Animacao_AbrirPacotinho(meu_album, catalogo_geral); // Roda a sua animação!
+                pacotes_bolso--;
+                Animacao_AbrirPacotinho(meu_album, catalogo_geral);
             } else {
                 strcpy(avisoMsg, "Voce nao tem pacotes! Va na Padaria comprar.");
                 avisoTimer = 3.0f;
             }
         }
 
-        // Só permite clicar nas construções se o álbum estiver fechado
         if (!mostrarAlbum && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-
             Vector2 mouse = GetMousePosition();
 
             if (CheckCollisionPointPoly(mouse, utfpr, quantidade_pontos)) {
@@ -120,66 +102,59 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
             }
 
             if (CheckCollisionPointRec(mouse, areaPadaria)) {
-                Entra_Padaria(&padaria, catalogo_geral, &saldo_jogador, &tem_album, &pacotes_bolso, &figurinhas_bolso);
+                Entra_Padaria(&padaria, catalogo_geral, meu_album, &saldo_jogador, &tem_album, &pacotes_bolso, &figurinhas_bolso);
             }
         }
 
-        // --- Desenho do mapa ---
         BeginDrawing();
         ClearBackground(BLACK);
-        
+
         if (tempoJogo.deDia == true) {
-            DrawTexture(fundo_dia, 0, 0, WHITE);   
+            DrawTexture(fundo_dia, 0, 0, WHITE);
         } else {
-            DrawTexture(fundo_noite, 0, 0, WHITE); 
+            DrawTexture(fundo_noite, 0, 0, WHITE);
         }
 
-        // Relógio HUD
-        DrawRectangle(10, 10, 140, 40, Fade(BLACK, 0.7f)); 
+        DrawRectangle(10, 10, 140, 40, Fade(BLACK, 0.7f));
         DrawText(TextFormat("%02d:00", tempoJogo.horaGame), 20, 20, 20, YELLOW);
-        
+
         if (tempoJogo.deDia == true) {
             DrawText("DIA", 90, 20, 20, SKYBLUE);
         } else {
             DrawText("NOITE", 90, 20, 20, PURPLE);
         }
 
-        // Dicas dinâmicas na tela
         if (!mostrarAlbum) {
-            int pos_y_dica = 60; // Posição Y inicial para desenhar as caixas
-            
-            // Só avisa que dá pra apertar A se o cara tiver o álbum
+            int pos_y_dica = 60;
+
             if (tem_album == 1) {
                 DrawRectangle(10, pos_y_dica, 190, 30, Fade(BLACK, 0.7f));
                 DrawText("[A] Abrir album", 20, pos_y_dica + 7, 18, WHITE);
-                pos_y_dica += 40; // Desce a posição para a próxima caixa não sobrepor
+                pos_y_dica += 40;
             }
-            
-            // Só avisa que dá pra apertar P se tiver pacote
+
             if (pacotes_bolso > 0) {
                 DrawRectangle(10, pos_y_dica, 220, 30, Fade(BLACK, 0.7f));
                 DrawText(TextFormat("[P] Abrir pacote (x%d)", pacotes_bolso), 20, pos_y_dica + 7, 18, WHITE);
             }
         }
 
-        // Desenha mensagens de erro/aviso no meio da tela (Some sozinho depois de 3 seg)
         if (avisoTimer > 0.0f) {
             avisoTimer -= GetFrameTime();
             int largTexto = MeasureText(avisoMsg, 20);
-            int posX = (1280 - largTexto) / 2; // Centraliza
-            
+            int posX = (1280 - largTexto) / 2;
             DrawRectangle(posX - 20, 600, largTexto + 40, 40, Fade(RED, 0.8f));
             DrawText(avisoMsg, posX, 610, 20, WHITE);
         }
 
-        // Desenha o álbum por cima de tudo se ele estiver aberto
         if (mostrarAlbum) {
             Desenha_Album(meu_album, &paginaAlbum);
         }
 
         EndDrawing();
-    } // while
+    }
 }
+
 // ============================================================
 // TELA HOME
 // ============================================================
@@ -211,60 +186,50 @@ int Tela_Home(Texture2D fundo, Music musica_menu) {
     }
 
     UnloadFont(fontePixel);
+    return 0;
+}
 
-    return 0; 
-}//fnc
+void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral) {
+    int fase_pacote = 0;
 
-
-
-void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){ 
-    int fase_pacote = 0; 
-    
-    // --- 1. SORTEIO DAS 5 CARTAS (De 0 a 980) ---
     int indices_sorteados[5];
-    
+
     for (int i = 0; i < 5; i++) {
         int numero_sorteado;
         bool repetido;
-        
+
         do {
             repetido = false;
-            numero_sorteado = rand() % 981; 
-            
+            numero_sorteado = rand() % 981;
+
             for (int j = 0; j < i; j++) {
                 if (indices_sorteados[j] == numero_sorteado) {
                     repetido = true;
-                    break; 
+                    break;
                 }
             }
         } while (repetido == true);
-        
+
         indices_sorteados[i] = numero_sorteado;
     }
 
     Texture2D texturas_figurinhas[5];
-    int estado_carta[5] = {0, 0, 0, 0, 0}; 
+    int estado_carta[5] = {0, 0, 0, 0, 0};
     float escala_x[5] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
-
 
     for (int i = 0; i < 5; i++) {
         int id_da_carta = indices_sorteados[i];
-        
-        const char* codigo_sujo = catalogo_geral->figurinhas[id_da_carta].codigo; 
-        
+        const char* codigo_sujo = catalogo_geral->figurinhas[id_da_carta].codigo;
 
         char codigo_limpo[15];
         strcpy(codigo_limpo, codigo_sujo);
 
-        
-        
-        for(int k = 0; k < strlen(codigo_limpo); k++) {
-            if(codigo_limpo[k] == ' ' || codigo_limpo[k] == '\r' || codigo_limpo[k] == '\n') {
+        for (int k = 0; k < (int)strlen(codigo_limpo); k++) {
+            if (codigo_limpo[k] == ' ' || codigo_limpo[k] == '\r' || codigo_limpo[k] == '\n') {
                 codigo_limpo[k] = '\0';
-                break; 
+                break;
             }
         }
-        
 
         const char* caminho = TextFormat("assets/figurinhas/%s.png", codigo_limpo);
         texturas_figurinhas[i] = LoadTexture(caminho);
@@ -277,22 +242,22 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
     Texture2D textura_pacote = LoadTextureFromImage(img_pacote);
     UnloadImage(img_pacote);
 
-    int largura_fig = 180;  
-    int altura_fig = 250;
+    int largura_fig = 180;
+    int altura_fig  = 250;
     int espacamento = 40;
-    int margem_x = (1280 - (5 * largura_fig + 4 * espacamento)) / 2; 
+    int margem_x    = (1280 - (5 * largura_fig + 4 * espacamento)) / 2;
 
-    Rectangle hitbox_pacote = { 540, 210, 200, 300 }; 
+    Rectangle hitbox_pacote = { 540, 210, 200, 300 };
 
     while (!WindowShouldClose()) {
         Vector2 mouse = GetMousePosition();
-        
+
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER)) break;
 
         BeginDrawing();
-        
-        Color cor_topo = { 15, 45, 100, 255 }; // Azul royal escuro
-        Color cor_base = { 5, 10, 25, 255 };   // Quase preto
+
+        Color cor_topo = { 15, 45, 100, 255 };
+        Color cor_base = { 5, 10, 25, 255 };
         DrawRectangleGradientV(0, 0, 1280, 720, cor_topo, cor_base);
 
         float tempo = GetTime();
@@ -300,120 +265,94 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
         DrawCircleGradient(640, 360, 450, Fade(SKYBLUE, brilho_luz), BLANK);
 
         if (fase_pacote == 0) {
-
             DrawText("ABRA SEU PACOTE!", 443, 103, 40, Fade(BLACK, 0.7f));
             DrawText("ABRA SEU PACOTE!", 440, 100, 40, GOLD);
-            
-            float variacao_y = sin(tempo * 3.0f) * 10.0f; 
+
+            float variacao_y = sin(tempo * 3.0f) * 10.0f;
             float rotacao = 0.0f;
-            
+
             if (CheckCollisionPointRec(mouse, hitbox_pacote)) {
-                rotacao = sin(tempo * 40.0f) * 3.0f; 
+                rotacao = sin(tempo * 40.0f) * 3.0f;
             }
 
             Rectangle fonte_pacote = { 0, 0, textura_pacote.width, textura_pacote.height };
-            
-            Rectangle destino_pacote = { 
-                hitbox_pacote.x + hitbox_pacote.width / 2, 
-                hitbox_pacote.y + hitbox_pacote.height / 2 + variacao_y, 
-                hitbox_pacote.width, 
-                hitbox_pacote.height 
+            Rectangle destino_pacote = {
+                hitbox_pacote.x + hitbox_pacote.width / 2,
+                hitbox_pacote.y + hitbox_pacote.height / 2 + variacao_y,
+                hitbox_pacote.width,
+                hitbox_pacote.height
             };
             Vector2 origem = { hitbox_pacote.width / 2, hitbox_pacote.height / 2 };
 
             Rectangle destino_sombra = destino_pacote;
-            destino_sombra.x += 15; // Desloca a sombra pra direita
-            destino_sombra.y += 15; // Desloca a sombra pra baixo
+            destino_sombra.x += 15;
+            destino_sombra.y += 15;
 
             DrawTexturePro(textura_pacote, fonte_pacote, destino_sombra, origem, rotacao, Fade(BLACK, 0.6f));
-
             DrawTexturePro(textura_pacote, fonte_pacote, destino_pacote, origem, rotacao, WHITE);
 
             if (CheckCollisionPointRec(mouse, hitbox_pacote) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                fase_pacote = 1; 
+                fase_pacote = 1;
             }
         }
         else if (fase_pacote == 1) {
-            
             DrawText("CLIQUE NAS CARTAS PARA REVELAR!", 310, 80, 40, GOLD);
 
-            int qtd_reveladas = 0; 
+            int qtd_reveladas = 0;
 
             for (int i = 0; i < 5; i++) {
                 int pos_x = margem_x + i * (largura_fig + espacamento);
-                int pos_y = 220; 
+                int pos_y = 220;
 
                 float offset_y = 0.0f;
                 Rectangle hitbox_mouse = { pos_x, pos_y, largura_fig, altura_fig };
-                
+
                 if (estado_carta[i] == 0 && CheckCollisionPointRec(mouse, hitbox_mouse)) {
-                    offset_y = -15.0f; 
+                    offset_y = -15.0f;
                 }
 
-                float largura_atual = largura_fig * escala_x[i];
+                float largura_atual  = largura_fig * escala_x[i];
+                float pos_x_centro   = pos_x + (largura_fig - largura_atual) / 2.0f;
+                Rectangle destino    = { pos_x_centro, pos_y + offset_y, largura_atual, altura_fig };
 
-                float pos_x_centro = pos_x + (largura_fig - largura_atual) / 2.0f; 
-
-                Rectangle destino = { pos_x_centro, pos_y + offset_y, largura_atual, altura_fig };
-                
-                // ESTADO 0: PARADA DE COSTAS
-                if (estado_carta[i] == 0) { 
+                // ESTADO 0: carta de costas parada
+                if (estado_carta[i] == 0) {
                     Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
-
-                    // Sombra da carta
                     Rectangle sombra_carta = { destino.x + 10, destino.y + 15, destino.width, destino.height };
                     DrawRectangleRec(sombra_carta, Fade(BLACK, 0.4f));
-
                     DrawTexturePro(textura_costas, fonte_costas, destino, (Vector2){0,0}, 0.0f, WHITE);
-                    
+
                     if (CheckCollisionPointRec(mouse, hitbox_mouse)) {
-                        DrawRectangleLinesEx(destino, 4, GOLD); // Brilho de seleï¿½ï¿½o
-                        
+                        DrawRectangleLinesEx(destino, 4, GOLD);
                         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                            estado_carta[i] = 1; // Inicia a animaï¿½ï¿½o de encolher!
+                            estado_carta[i] = 1;
                         }
                     }
                 }
 
-                else if (estado_carta[i] == 1) { 
-                    escala_x[i] -= 6.0f * GetFrameTime(); // 6.0f ï¿½ a velocidade do giro
+                // ESTADO 1: encolhendo (animacao flip) â€” so desenha, nao adiciona ao album
+                else if (estado_carta[i] == 1) {
+                    escala_x[i] -= 6.0f * GetFrameTime();
                     if (escala_x[i] <= 0.0f) {
                         escala_x[i] = 0.0f;
-                        estado_carta[i] = 2; // Quando sumir, muda o estado pra crescer a frente!
+                        estado_carta[i] = 2;
                     }
 
-                        int id_carta_sorteada = indices_sorteados[i];
-                        char* nome_tirado = catalogo_geral->figurinhas[id_carta_sorteada].nome_Jogador;
-                        
-                        int pos_no_album = Procura_Jogador(meu_album, nome_tirado);
-                        
-                        if (pos_no_album != -1) { // Se jï¿½ existe no seu ï¿½lbum...
-                            if (meu_album->figurinhas[pos_no_album].colada == 0) {
-                                meu_album->figurinhas[pos_no_album].colada = 1;
-                            } else {
-                                meu_album->figurinhas[pos_no_album].quantidade_repetidas++;
-                            }
-                        } else {
-                           
-                        }
                     Rectangle fonte_costas = { 0, 0, textura_costas.width, textura_costas.height };
-
-                    // Sombra da carta
                     Rectangle sombra_carta = { destino.x + 10, destino.y + 15, destino.width, destino.height };
                     DrawRectangleRec(sombra_carta, Fade(BLACK, 0.4f));
-
                     DrawTexturePro(textura_costas, fonte_costas, destino, (Vector2){0,0}, 0.0f, WHITE);
                 }
-                else if (estado_carta[i] == 2) { 
+
+                // ESTADO 2: crescendo mostrando a frente â€” adiciona ao album UMA VEZ
+                else if (estado_carta[i] == 2) {
                     escala_x[i] += 6.0f * GetFrameTime();
                     if (escala_x[i] >= 1.0f) {
                         escala_x[i] = 1.0f;
-                        estado_carta[i] = 3; 
-                        
-                        
+                        estado_carta[i] = 3;
+
                         int id_da_carta = indices_sorteados[i];
                         const char* codigo_sorteado = catalogo_geral->figurinhas[id_da_carta].codigo;
-                        
 
                         int index_encontrado = -1;
                         for (int j = 0; j < meu_album->quantidade_atual; j++) {
@@ -422,7 +361,6 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
                                 break;
                             }
                         }
-                        
 
                         if (index_encontrado != -1) {
                             if (meu_album->figurinhas[index_encontrado].colada == 0) {
@@ -430,52 +368,42 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
                             } else {
                                 meu_album->figurinhas[index_encontrado].quantidade_repetidas++;
                             }
-                        } 
-
-                        else {
+                        } else {
                             int qtd = meu_album->quantidade_atual;
-                            
-
                             if (qtd == 0) {
-
-                                meu_album->figurinhas = malloc(1 * sizeof(Dados_Figurinha));
+                                meu_album->figurinhas = malloc(sizeof(Dados_Figurinha));
                             } else {
-
                                 meu_album->figurinhas = realloc(meu_album->figurinhas, (qtd + 1) * sizeof(Dados_Figurinha));
                             }
-                            
                             meu_album->figurinhas[qtd] = catalogo_geral->figurinhas[id_da_carta];
                             meu_album->figurinhas[qtd].colada = 1;
                             meu_album->figurinhas[qtd].quantidade_repetidas = 0;
-                            
-                            meu_album->quantidade_atual++; // Atualiza o tamanho do ï¿½lbum
+                            meu_album->quantidade_atual++;
                         }
-                        // =======================================================
                     }
-                    
+
                     Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
                     DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
                 }
 
-                else if (estado_carta[i] == 3) { 
+                // ESTADO 3: carta revelada, parada
+                else if (estado_carta[i] == 3) {
                     Rectangle fonte_frente = { 0, 0, texturas_figurinhas[i].width, texturas_figurinhas[i].height };
-
                     Rectangle sombra_carta = { destino.x + 10, destino.y + 15, destino.width, destino.height };
                     DrawRectangleRec(sombra_carta, Fade(BLACK, 0.4f));
-                    
                     DrawTexturePro(texturas_figurinhas[i], fonte_frente, destino, (Vector2){0,0}, 0.0f, WHITE);
-                    
+
                     int id_da_carta = indices_sorteados[i];
                     DrawText(catalogo_geral->figurinhas[id_da_carta].codigo, pos_x + 50, pos_y + altura_fig + 20, 20, LIGHTGRAY);
-                    
-                    qtd_reveladas++; 
+
+                    qtd_reveladas++;
                 }
             }
-            
-                if (qtd_reveladas == 5) {
-                    DrawText("Aperte ENTER ou ESC para fechar.", 440, 600, 20, GRAY);
-                }
+
+            if (qtd_reveladas == 5) {
+                DrawText("Aperte ENTER ou ESC para fechar.", 440, 600, 20, GRAY);
             }
+        }
 
         EndDrawing();
     }
@@ -483,7 +411,6 @@ void Animacao_AbrirPacotinho(Album *meu_album, Album *catalogo_geral){
     for (int i = 0; i < 5; i++) {
         UnloadTexture(texturas_figurinhas[i]);
     }
-    UnloadTexture(textura_costas); 
+    UnloadTexture(textura_costas);
     UnloadTexture(textura_pacote);
 }
-

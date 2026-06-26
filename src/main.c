@@ -44,7 +44,7 @@ int main(void){
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             //inicia as texturas do menu, e o som
-        Image imagem_gigante = LoadImage("assets/fundopika.png");
+        Image imagem_gigante = LoadImage("assets/fundopika (1).png");
 
         ImageResize(&imagem_gigante, 1280, 720);
 

@@ -44,10 +44,7 @@ int carregar_questoes_csv(Questao *banco);
 
 int Tela_Home(Texture2D fundo, Music musica_menu);
 
-void Entra_Padaria(BancaPadaria *padaria, Album *catalogo_geral, float *saldo_jogador, int *tem_album, int *pacotes_bolso, int *figurinhas_bolso);
-
-
-
+void Entra_Padaria(BancaPadaria *padaria, Album *catalogo_geral, Album *meu_album, float *saldo_jogador, int *tem_album, int *pacotes_bolso, int *figurinhas_bolso);
 
 
 #endif
