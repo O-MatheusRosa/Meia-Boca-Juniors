@@ -28,7 +28,7 @@ void Tela_Jogo(Texture2D fundo_dia, Texture2D fundo_noite, Music musica, Album *
     };
     int pontos_diltu = 6;
 
-    float saldo_jogador = 200.00;
+    float saldo_jogador = 30.00;
 
     bool mostrarAlbum = false;
     int paginaAlbum = 0;

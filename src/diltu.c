@@ -17,8 +17,6 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
     int resultado_jogo1 = -1;
     int resultado_jogo2 = -1;
     float ganhos_totais = 0.0f;
-    int gols_j1_e = 0, gols_j1_d = 0; // Gols Jogo 1 (Esquerda e Direita)
-    int gols_j2_e = 0, gols_j2_d = 0; // Gols Jogo 2 (Esquerda e Direita)
     
     float tempo_inicio = 0.0;
 
@@ -61,8 +59,8 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
 
     float multiplicador_time1, multiplicador_time2, multiplicador_time3, multiplicador_time4;
 
-    multiplicador_time1 = 1.20f + (rand() % 100) / 100.0f; // Os miozin
-    multiplicador_time2 = 2.50f + (rand() % 200) / 100.0f; // Zebra
+    multiplicador_time1 = 1.20f + (rand() % 100) / 100.0f; // Paga 3.50*1.20(esses 1.20 é sorte)
+    multiplicador_time2 = 2.50f + (rand() % 200) / 100.0f; // paga 3.50*2.50(sorte tbm)
 
     //jogo 1
     if (rand() % 2 == 0) { 
@@ -260,11 +258,11 @@ void Tela_Futebol(Music musica,float *saldo_jogador){
                 if (resultado_jogo2 == 0) DrawText(TextFormat("VENCEU: %s", nomes_completos[t3]), 520, 320, 25, WHITE);
                 else DrawText(TextFormat("VENCEU: %s", nomes_completos[t4]), 520, 320, 25, BLUE);
 
-                // A Hora da Verdade: Deu Red ou Green
+                //Deu Red ou Green
                 if (ganhos_totais > 0) {
                     DrawText(TextFormat("LUCROU: R$ %.2f", ganhos_totais), 480, 400, 30, GREEN);
                 } else {
-                    DrawText("DEU RED! BANCA QUEBROU.", 450, 400, 30, RED);
+                    DrawText("DEU RED! PERDEU DINHEIRO", 450, 400, 30, RED);
                 }//msgzinha do resultado
 
                 // Botão de jogar de novo
@@ -394,8 +392,8 @@ void Tela_Bixo(Music musica,float *saldo_jogador){
                 if (fase_bicho == 0){
 
                     for (int i = 0; i < 25; i++){
-                        int coluna = i % 5;
-                        int linha = i / 5;
+                        int coluna = i % 5; //resto é o valor de x
+                        int linha = i / 5; // resultado é o valor de y
 
                         // Calcula a posição exata da hitbox atual
                         int pos_x = margem_x + (coluna * (largura_btn + espaco_x));
@@ -406,8 +404,7 @@ void Tela_Bixo(Music musica,float *saldo_jogador){
 
                         //DrawRectangleLinesEx(hitbox_animal, 2, RED);
 
-                        // Se o mouse bater na hitbox
-                        // Se o mouse bater na hitbox E o cooldown tiver zerado
+                        
                     if (CheckCollisionPointRec(mouse, hitbox_animal) && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && cooldown_tela == 0) {
                             bicho_selecionado = i; 
                             fase_bicho = 1;
@@ -570,6 +567,7 @@ int Tela_Diltu(Music musica, float *saldo_jogador, bool deDia) {
     } else {
         imagem_dilto = LoadImage("assets/dilto_noite.png"); // Imagem do bar insalubre
     }
+    
     ImageResize(&imagem_dilto, 1280, 720);
     Texture2D fundo_dilto = LoadTextureFromImage(imagem_dilto);
     UnloadImage(imagem_dilto);
